@@ -1,3 +1,7 @@
+/**
+ * Presidium DB Client and Server may be freely distributed under the CFOSS license.
+ */
+
 const Readable = require("presidium/Readable")
 const TextStream = require("./TextStream")
 const BinaryStream = require("./BinaryStream")

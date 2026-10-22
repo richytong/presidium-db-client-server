@@ -1,3 +1,7 @@
+/**
+ * Presidium DB Client and Server may be freely distributed under the CFOSS license.
+ */
+
 require("rubico/global")
 const HTTP = require("presidium/HTTP")
 const Readable = require("presidium/Readable")

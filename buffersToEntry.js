@@ -1,4 +1,8 @@
 /**
+ * Presidium DB Client and Server may be freely distributed under the CFOSS license.
+ */
+
+/**
  * @name buffersToEntry
  *
  * @docs
