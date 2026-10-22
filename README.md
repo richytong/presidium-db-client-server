@@ -41,17 +41,7 @@ await sessionHt.delete(accessToken)
 Query your distributed database.
 
 ```javascript
-const DatabaseServer = require("presidium-db-client-server/DatabaseServer")
 const DiskSortedHashTableClient = require("presidium-db-client-server/DiskSortedHashTableClient")
-
-const server = new DatabaseServer({
-  databasePath: `${__dirname}/database`,
-})
-await server.init()
-
-server.listen(5000, () => {
-  console.log("Database server listening on port 5000")
-})
 
 const postHt = new DiskSortedHashTableClient({
   serverUrl: "http://localhost:5000",
