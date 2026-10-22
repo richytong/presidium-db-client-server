@@ -21,7 +21,9 @@
     "TextEntriesStream.js",
     "TextStream.js",
     "buffersToEntry.js",
-    "handleServerResponse.js"
+    "handleServerResponse.js",
+    "healthCheckHandler.js",
+    "notFoundHandler.js"
   ],
   "keywords": [
     "presidium",

@@ -7,12 +7,18 @@ const HTTP = require("presidium/HTTP")
 const DiskHashTable = require("presidium/DiskHashTable")
 const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
 const DatabaseHandler = require("./DatabaseHandler")
+const healthCheckHandler = require("./healthCheckHandler")
+const notFoundHandler = require("./notFoundHandler")
 
 /**
  * @name DatabaseServer
  *
  * @docs
  * ```specscript
+ * module HTTP "https://presidium.services/docs/HTTP"
+ *
+ * HTTP.Handler(request HTTP.Request, response HTTP.Response) -> ()
+ *
  * new DatabaseServer(options {
  *   databasePath: string,
  *   manifestTableName: string,
@@ -21,11 +27,11 @@ const DatabaseHandler = require("./DatabaseHandler")
  *   defaultTableInitialLength: number,
  *   defaultTableItemSize: number,
  *   defaultDiskSortedHashTableDegree: number,
- * }) -> server DatabaseServer
+ * }, ...handlers Arguments<HTTP.Handler>) -> server DatabaseServer
  * ```
  */
 class DatabaseServer {
-  constructor(options) {
+  constructor(options, ...handlers) {
     this.databasePath = options.databasePath
     this.manifestTableName = options.manifestTableName ?? "Manifest"
     this.manifestTableInitialLength = options.manifestTableInitialLength ?? 1048576
@@ -33,6 +39,7 @@ class DatabaseServer {
     this.defaultTableInitialLength = options.defaultTableInitialLength ?? 1048576
     this.defaultTableItemSize = options.defaultTableItemSize ?? 1024
     this.defaultDiskSortedHashTableDegree = options.defaultDiskSortedHashTableDegree ?? 2
+    this.handlers = handlers
     this.server = null
     this.hts = new Map()
   }
@@ -67,8 +74,16 @@ class DatabaseServer {
       hts: this.hts,
     })
 
-    const handler = tryCatch(
-      databaseHandler,
+    const router = tryCatch(
+      switchCase(
+        request => request.path == "/health",
+        healthCheckHandler,
+
+        request => request.pathDepth == 2,
+        databaseHandler,
+
+        notFoundHandler,
+      ),
       function errorHandler(error, request, response) {
         response.writeHead(error.code ?? 500, {
           "Content-Type": "text/plain",
@@ -76,6 +91,21 @@ class DatabaseServer {
         response.end(error.message)
       }
     )
+
+    const handler = all.series([
+      ...this.handlers,
+      request => {
+        const { pathname } = new URL(`http://*${request.url}`)
+        request.path = decodeURIComponent(
+          pathname == "/" ? pathname
+          : pathname.endsWith("/") ? pathname.slice(0, -1)
+          : pathname
+        )
+        request.pathSegments = request.path.slice(1).split("/")
+        request.pathDepth = request.pathSegments.length
+      },
+      router,
+    ])
 
     this.server = HTTP.Server(handler)
   }

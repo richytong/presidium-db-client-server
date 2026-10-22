@@ -665,10 +665,75 @@ async function test2() {
   server2.close()
 }
 
+async function test3() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  let n = 0
+  let p = 0
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  }, (request, response) => {
+    n += 1
+  }, (request, response) => {
+    p = n
+  })
+  await server1.init()
+
+  let resolve1
+  const promise1 = new Promise(resolve => (resolve1 = resolve))
+  server1.listen(7363, resolve1)
+  await promise1
+
+  const ht1 = new DiskHashTableClient({
+    serverUrl: "http://localhost:7363",
+    tableName: "Table4",
+  })
+
+  await ht1.set("a", "1")
+  assert.equal(n, 1)
+  assert.equal(p, 1)
+  await ht1.set("b", "2")
+  assert.equal(n, 2)
+  assert.equal(p, 2)
+  await ht1.set("c", "3")
+  assert.equal(n, 3)
+  assert.equal(p, 3)
+
+  const valueA = await ht1.get("a")
+  assert.equal(valueA, "1")
+  assert.equal(n, 4)
+  assert.equal(p, 4)
+
+  await ht1.delete("a")
+  assert.equal(n, 5)
+  assert.equal(p, 5)
+
+  assert.strictEqual(await ht1.get("a"), undefined)
+  assert.equal(n, 6)
+  assert.equal(p, 6)
+
+  await ht1.clear()
+  assert.equal(n, 7)
+  assert.equal(p, 7)
+
+  server1.close()
+}
+
 async function test() {
   await test0()
   await test1()
   await test2()
+  await test3()
   console.log("Success")
 }
 
