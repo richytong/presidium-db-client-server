@@ -518,8 +518,6 @@ async function test1() {
   const ht2 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7360",
     tableName: "Table2",
-    sortValueType: "number",
-    degree: 2,
   })
 
   const valueD = await ht2.get("d")

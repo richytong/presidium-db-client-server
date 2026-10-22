@@ -26,7 +26,7 @@ class DiskSortedHashTableClient {
     this.serverUrl = options.serverUrl
     this.tableName = options.tableName
     this.sortValueType = options.sortValueType
-    this.degree = options.degree ?? 2
+    this.degree = options.degree
     this.delimiter = options.delimiter ?? ""
     this.http = new HTTP(this.serverUrl)
   }
@@ -45,8 +45,12 @@ class DiskSortedHashTableClient {
     const response = await this.http.POST(`/${this.tableName}/clear`, {
       headers: {
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
     })
     return handleServerResponse(response)
@@ -67,8 +71,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify({ key, value, sortValue }),
     })
@@ -90,8 +98,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify({ key }),
     })
@@ -116,8 +128,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify({ key }),
     })
@@ -143,8 +159,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify(options),
     })
@@ -179,8 +199,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify(options),
     })
@@ -215,8 +239,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify(options),
     })
@@ -252,8 +280,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify(options),
     })
@@ -289,8 +321,12 @@ class DiskSortedHashTableClient {
       headers: {
         "Content-Type": "application/json",
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
       body: JSON.stringify({ key }),
     })
@@ -310,8 +346,12 @@ class DiskSortedHashTableClient {
     const response = await this.http.POST(`/${this.tableName}/count`, {
       headers: {
         "Client-Name": "DiskSortedHashTableClient",
-        "Sort-Value-Type": this.sortValueType,
-        "Degree": Number(this.degree),
+        ...this.sortValueType ? {
+          "Sort-Value-Type": this.sortValueType,
+        } : {},
+        ...this.degree ? {
+          "Degree": Number(this.degree),
+        } : {},
       },
     })
     return Number(await handleServerResponse(response))
