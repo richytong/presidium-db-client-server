@@ -5,6 +5,7 @@
 require("rubico/global")
 const HTTP = require("presidium/HTTP")
 const DiskHashTable = require("presidium/DiskHashTable")
+const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
 const DatabaseHandler = require("./DatabaseHandler")
 
 /**
@@ -106,6 +107,52 @@ class DatabaseServer {
       ht.close()
     }
     this.server.close()
+  }
+
+  /**
+   * @name registerDiskHashTable
+   *
+   * @docs
+   * ```specscript
+   * registerDiskHashTable(tableName string, config {
+   *   storagePath: string,
+   *   headerPath: string,
+   *   initialLength: number,
+   *   itemSize: number,
+   *   resizeRatio: number,
+   *   resizeFactor: number,
+   * }) -> Promise<>
+   * ```
+   */
+  async registerDiskHashTable(tableName, config) {
+    const ht = new DiskHashTable(config)
+    await ht.init()
+    await this.manifestHt.set(tableName, JSON.stringify(config))
+    this.hts.set(tableName, ht)
+  }
+
+  /**
+   * @name registerDiskSortedHashTable
+   *
+   * @docs
+   * ```specscript
+   * registerDiskSortedHashTable(tableName string, config {
+   *   storagePath: string,
+   *   headerPath: string,
+   *   initialLength: number,
+   *   itemSize: number,
+   *   sortValueType: "number"|"string",
+   *   degree: number,
+   *   resizeRatio: number,
+   *   resizeFactor: number,
+   * }) -> Promise<>
+   * ```
+   */
+  async registerDiskSortedHashTable(tableName, config) {
+    const ht = new DiskSortedHashTable(config)
+    await ht.init()
+    await this.manifestHt.set(tableName, JSON.stringify(config))
+    this.hts.set(tableName, ht)
   }
 }
 

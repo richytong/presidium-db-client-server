@@ -550,6 +550,42 @@ async function test2() {
   server1.listen(7361, resolve1)
   await promise1
 
+  await server1.registerDiskHashTable("Registered_HashTable1", {
+    storagePath: `${__dirname}/database/Registered_HashTable1/storage`,
+    headerPath: `${__dirname}/database/Registered_HashTable1/header`,
+    initialLength: 1024,
+    itemSize: 128,
+  })
+  assert(server1.hts.has("Registered_HashTable1"))
+
+  const config1Json = await server1.manifestHt.get("Registered_HashTable1")
+  const config1 = JSON.parse(config1Json)
+
+  assert.equal(config1.headerPath, `${__dirname}/database/Registered_HashTable1/header`)
+  assert.equal(config1.storagePath, `${__dirname}/database/Registered_HashTable1/storage`)
+  assert.equal(config1.initialLength, 1024)
+  assert.equal(config1.itemSize, 128)
+
+  await server1.registerDiskSortedHashTable("Registered_HashTable2", {
+    storagePath: `${__dirname}/database/Registered_HashTable2/storage`,
+    headerPath: `${__dirname}/database/Registered_HashTable2/header`,
+    initialLength: 2048,
+    itemSize: 256,
+    sortValueType: "string",
+    degree: 3,
+  })
+  assert(server1.hts.has("Registered_HashTable2"))
+
+  const config2Json = await server1.manifestHt.get("Registered_HashTable2")
+  const config2 = JSON.parse(config2Json)
+
+  assert.equal(config2.headerPath, `${__dirname}/database/Registered_HashTable2/header`)
+  assert.equal(config2.storagePath, `${__dirname}/database/Registered_HashTable2/storage`)
+  assert.equal(config2.initialLength, 2048)
+  assert.equal(config2.itemSize, 256)
+  assert.equal(config2.sortValueType, "string")
+  assert.equal(config2.degree, 3)
+
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7361",
     tableName: "Table3",
