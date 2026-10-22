@@ -56,9 +56,6 @@ async function handleServerResponse(response, options = {}) {
       const stream = new BinaryEntriesStream(response, entryLength, delimiter, encoding)
       return AsyncIterator.fromEvents(stream, "entry")
     }
-    if (response.headers["content-type"] == "application/json") {
-      return Readable.JSON(response)
-    }
     if (response.headers["content-type"] == "application/octet-stream") {
       return Readable.Buffer(response)
     }

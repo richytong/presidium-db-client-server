@@ -75,11 +75,30 @@ async function test3() {
   assert(binaryArray[4].equals(Buffer.from("")))
 }
 
+async function test4() {
+  const delimiter = ","
+  const delimitedStream = stream.Readable.from(["a", delimiter, "b", delimiter, "c"])
+  const binaryStream = new BinaryStream(delimitedStream, delimiter)
+  const binaryArray = []
+  let resolve
+  const promise = new Promise(_resolve => (resolve = _resolve))
+  binaryStream.on("data", chunk => {
+    binaryArray.push(chunk)
+  })
+  binaryStream.on("end", resolve)
+  await promise
+  assert.equal(binaryArray.length, 3)
+  assert(binaryArray[0].equals(Buffer.from("a")))
+  assert(binaryArray[1].equals(Buffer.from("b")))
+  assert(binaryArray[2].equals(Buffer.from("c")))
+}
+
 async function test() {
   await test0()
   await test1()
   await test2()
   await test3()
+  await test4()
   console.log("Success")
 }
 

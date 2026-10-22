@@ -1,5 +1,6 @@
 const assert = require("assert")
 const fs = require("fs")
+const Readable = require("presidium/Readable")
 const DatabaseServer = require("./DatabaseServer")
 const DiskHashTableClient = require("./DiskHashTableClient")
 const DiskSortedHashTableClient = require("./DiskSortedHashTableClient")
@@ -10,7 +11,7 @@ async function test0() {
   } catch {
   }
 
-  const server = new DatabaseServer({
+  const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
     manifestTableName: "Manifest",
     manifestTableInitialLength: 1024,
@@ -19,11 +20,11 @@ async function test0() {
     defaultTableItemSize: 1024,
     defaultDiskSortedHashTableDegree: 2,
   })
-  await server.init()
+  await server1.init()
 
   let resolve1
   const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server.listen(7357, resolve1)
+  server1.listen(7357, resolve1)
   await promise1
 
   const ht1 = new DiskHashTableClient({
@@ -147,16 +148,11 @@ async function test0() {
   assert.strictEqual(await ht1.get("b"), undefined)
   assert.strictEqual(await ht1.get("c"), undefined)
 
-  server.close()
-}
+  await ht1.set("d", "4")
 
-async function test1() {
-  try {
-    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
-  } catch {
-  }
+  server1.close()
 
-  const server = new DatabaseServer({
+  const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
     manifestTableName: "Manifest",
     manifestTableInitialLength: 1024,
@@ -165,65 +161,98 @@ async function test1() {
     defaultTableItemSize: 1024,
     defaultDiskSortedHashTableDegree: 2,
   })
-  await server.init()
+  await server2.init()
+
+  let resolve2
+  const promise2 = new Promise(resolve => (resolve2 = resolve))
+  server2.listen(7358, resolve2)
+  await promise2
+
+  const ht2 = new DiskHashTableClient({
+    serverUrl: "http://localhost:7358",
+    tableName: "Table1",
+  })
+
+  const valueD = await ht2.get("d")
+  assert.equal(valueD, "4")
+
+  server2.close()
+}
+
+async function test1() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server1.init()
 
   let resolve1
   const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server.listen(7358, resolve1)
+  server1.listen(7359, resolve1)
   await promise1
 
-  const ht2 = new DiskSortedHashTableClient({
-    serverUrl: "http://localhost:7358",
+  const ht1 = new DiskSortedHashTableClient({
+    serverUrl: "http://localhost:7359",
     tableName: "Table2",
     sortValueType: "number",
     degree: 2,
     delimiter: "",
   })
 
-  const count1 = await ht2.count()
+  const count1 = await ht1.count()
 
   assert.strictEqual(count1, 0)
 
-  await ht2.set("a", "1", 1)
-  await ht2.set("b", "2", 2)
-  await ht2.set("c", "3", 3)
+  await ht1.set("a", "1", 1)
+  await ht1.set("b", "2", 2)
+  await ht1.set("c", "3", 3)
 
-  const count2 = await ht2.count()
+  const count2 = await ht1.count()
 
   assert.strictEqual(count2, 3)
 
-  await ht2.clear()
+  await ht1.clear()
 
-  const count3 = await ht2.count()
+  const count3 = await ht1.count()
 
   assert.strictEqual(count3, 0)
 
-  await ht2.set("a", "1", 1)
-  await ht2.set("b", "2", 2)
-  await ht2.set("c", "3", 3)
+  await ht1.set("a", "1", 1)
+  await ht1.set("b", "2", 2)
+  await ht1.set("c", "3", 3)
 
-  const count4 = await ht2.count()
+  const count4 = await ht1.count()
 
   assert.strictEqual(count4, 3)
 
-  const valueA = await ht2.get("a")
-  const valueB = await ht2.get("b")
-  const valueC = await ht2.get("c")
+  const valueA = await ht1.get("a")
+  const valueB = await ht1.get("b")
+  const valueC = await ht1.get("c")
 
   assert.equal(valueA, "1")
   assert.equal(valueB, "2")
   assert.equal(valueC, "3")
 
-  const bufferA = await ht2.getBinary("a")
-  const bufferB = await ht2.getBinary("b")
-  const bufferC = await ht2.getBinary("c")
+  const bufferA = await ht1.getBinary("a")
+  const bufferB = await ht1.getBinary("b")
+  const bufferC = await ht1.getBinary("c")
 
   assert(bufferA.equals(Buffer.from("1")))
   assert(bufferB.equals(Buffer.from("2")))
   assert(bufferC.equals(Buffer.from("3")))
 
   const array1 = []
-  for await (const value of await ht2.forwardIterator()) {
+  for await (const value of await ht1.forwardIterator()) {
     array1.push(value)
   }
   assert.equal(array1.length, 3)
@@ -232,7 +261,7 @@ async function test1() {
   assert.equal(array1[2], "3")
 
   const array2 = []
-  for await (const value of await ht2.forwardIterator({ valueType: "string" })) {
+  for await (const value of await ht1.forwardIterator({ valueType: "string" })) {
     array2.push(value)
   }
   assert.equal(array2.length, 3)
@@ -241,7 +270,7 @@ async function test1() {
   assert.equal(array2[2], "3")
 
   const array3 = []
-  for await (const value of await ht2.forwardIterator({ startingSortValue: 2, endingSortValue: 4 })) {
+  for await (const value of await ht1.forwardIterator({ startingSortValue: 2, endingSortValue: 4 })) {
     array3.push(value)
   }
   assert.equal(array3.length, 2)
@@ -249,7 +278,7 @@ async function test1() {
   assert.equal(array3[1], "3")
 
   const array4 = []
-  for await (const value of await ht2.forwardIterator({ valueType: "binary" })) {
+  for await (const value of await ht1.forwardIterator({ valueType: "binary" })) {
     array4.push(value)
   }
   assert.equal(array4.length, 3)
@@ -258,7 +287,7 @@ async function test1() {
   assert(array4[2].equals(Buffer.from("3")))
 
   const array5 = []
-  for await (const value of await ht2.forwardIterator({ exclusiveStartKey: "a" })) {
+  for await (const value of await ht1.forwardIterator({ exclusiveStartKey: "a" })) {
     array5.push(value)
   }
   assert.equal(array5.length, 2)
@@ -266,7 +295,7 @@ async function test1() {
   assert.equal(array5[1], "3")
 
   const array6 = []
-  for await (const value of await ht2.reverseIterator()) {
+  for await (const value of await ht1.reverseIterator()) {
     array6.push(value)
   }
   assert.equal(array6.length, 3)
@@ -275,7 +304,7 @@ async function test1() {
   assert.equal(array6[2], "1")
 
   const array7 = []
-  for await (const value of await ht2.reverseIterator({ valueType: "string" })) {
+  for await (const value of await ht1.reverseIterator({ valueType: "string" })) {
     array7.push(value)
   }
   assert.equal(array7.length, 3)
@@ -284,7 +313,7 @@ async function test1() {
   assert.equal(array7[2], "1")
 
   const array8 = []
-  for await (const value of await ht2.reverseIterator({ startingSortValue: 2, endingSortValue: 0 })) {
+  for await (const value of await ht1.reverseIterator({ startingSortValue: 2, endingSortValue: 0 })) {
     array8.push(value)
   }
   assert.equal(array8.length, 2)
@@ -292,7 +321,7 @@ async function test1() {
   assert.equal(array8[1], "1")
 
   const array9 = []
-  for await (const value of await ht2.reverseIterator({ valueType: "binary" })) {
+  for await (const value of await ht1.reverseIterator({ valueType: "binary" })) {
     array9.push(value)
   }
   assert.equal(array9.length, 3)
@@ -301,7 +330,7 @@ async function test1() {
   assert(array9[2].equals(Buffer.from("1")))
 
   const array10 = []
-  for await (const value of await ht2.reverseIterator({ exclusiveStartKey: "c" })) {
+  for await (const value of await ht1.reverseIterator({ exclusiveStartKey: "c" })) {
     array10.push(value)
   }
   assert.equal(array10.length, 2)
@@ -309,7 +338,7 @@ async function test1() {
   assert.equal(array10[1], "1")
 
   const array11 = []
-  for await (const value of await ht2.forwardEntriesIterator()) {
+  for await (const value of await ht1.forwardEntriesIterator()) {
     array11.push(value)
   }
   assert.equal(array11.length, 3)
@@ -324,7 +353,7 @@ async function test1() {
   assert.equal(array11[2][2], 3)
 
   const array12 = []
-  for await (const value of await ht2.forwardEntriesIterator({ valueType: "string" })) {
+  for await (const value of await ht1.forwardEntriesIterator({ valueType: "string" })) {
     array12.push(value)
   }
   assert.equal(array12.length, 3)
@@ -339,7 +368,7 @@ async function test1() {
   assert.equal(array12[2][2], 3)
 
   const array13 = []
-  for await (const value of await ht2.forwardEntriesIterator({ startingSortValue: 2, endingSortValue: 4 })) {
+  for await (const value of await ht1.forwardEntriesIterator({ startingSortValue: 2, endingSortValue: 4 })) {
     array13.push(value)
   }
   assert.equal(array13.length, 2)
@@ -351,7 +380,7 @@ async function test1() {
   assert.equal(array13[1][2], 3)
 
   const array14 = []
-  for await (const value of await ht2.forwardEntriesIterator({ valueType: "binary" })) {
+  for await (const value of await ht1.forwardEntriesIterator({ valueType: "binary" })) {
     array14.push(value)
   }
   assert.equal(array14.length, 3)
@@ -366,7 +395,7 @@ async function test1() {
   assert.equal(array14[2][2], 3)
 
   const array15 = []
-  for await (const value of await ht2.forwardEntriesIterator({ exclusiveStartKey: "a" })) {
+  for await (const value of await ht1.forwardEntriesIterator({ exclusiveStartKey: "a" })) {
     array15.push(value)
   }
   assert.equal(array15.length, 2)
@@ -378,7 +407,7 @@ async function test1() {
   assert.equal(array15[1][2], 3)
 
   const array16 = []
-  for await (const value of await ht2.reverseEntriesIterator()) {
+  for await (const value of await ht1.reverseEntriesIterator()) {
     array16.push(value)
   }
   assert.equal(array16.length, 3)
@@ -393,7 +422,7 @@ async function test1() {
   assert.equal(array16[2][2], 1)
 
   const array17 = []
-  for await (const value of await ht2.reverseEntriesIterator({ valueType: "string" })) {
+  for await (const value of await ht1.reverseEntriesIterator({ valueType: "string" })) {
     array17.push(value)
   }
   assert.equal(array17.length, 3)
@@ -408,7 +437,7 @@ async function test1() {
   assert.equal(array17[2][2], 1)
 
   const array18 = []
-  for await (const value of await ht2.reverseEntriesIterator({ startingSortValue: 2, endingSortValue: 0 })) {
+  for await (const value of await ht1.reverseEntriesIterator({ startingSortValue: 2, endingSortValue: 0 })) {
     array18.push(value)
   }
   assert.equal(array18.length, 2)
@@ -420,7 +449,7 @@ async function test1() {
   assert.equal(array18[1][2], 1)
 
   const array19 = []
-  for await (const value of await ht2.reverseEntriesIterator({ valueType: "binary" })) {
+  for await (const value of await ht1.reverseEntriesIterator({ valueType: "binary" })) {
     array19.push(value)
   }
   assert.equal(array19.length, 3)
@@ -435,7 +464,7 @@ async function test1() {
   assert.equal(array19[2][2], 1)
 
   const array20 = []
-  for await (const value of await ht2.reverseEntriesIterator({ exclusiveStartKey: "c" })) {
+  for await (const value of await ht1.reverseEntriesIterator({ exclusiveStartKey: "c" })) {
     array20.push(value)
   }
   assert.equal(array20.length, 2)
@@ -446,32 +475,158 @@ async function test1() {
   assert.equal(array20[1][1], "1")
   assert.equal(array20[1][2], 1)
 
-  const didDeleteA1 = await ht2.delete("a")
-  const didDeleteB1 = await ht2.delete("b")
-  const didDeleteC1 = await ht2.delete("c")
+  const didDeleteA1 = await ht1.delete("a")
+  const didDeleteB1 = await ht1.delete("b")
+  const didDeleteC1 = await ht1.delete("c")
 
   assert.strictEqual(didDeleteA1, true)
   assert.strictEqual(didDeleteB1, true)
   assert.strictEqual(didDeleteC1, true)
 
-  const didDeleteA2 = await ht2.delete("a")
-  const didDeleteB2 = await ht2.delete("b")
-  const didDeleteC2 = await ht2.delete("c")
+  const didDeleteA2 = await ht1.delete("a")
+  const didDeleteB2 = await ht1.delete("b")
+  const didDeleteC2 = await ht1.delete("c")
   
   assert.strictEqual(didDeleteA1, true)
   assert.strictEqual(didDeleteB1, true)
   assert.strictEqual(didDeleteC1, true)
 
-  assert.strictEqual(await ht2.get("a"), undefined)
-  assert.strictEqual(await ht2.get("b"), undefined)
-  assert.strictEqual(await ht2.get("c"), undefined)
+  assert.strictEqual(await ht1.get("a"), undefined)
+  assert.strictEqual(await ht1.get("b"), undefined)
+  assert.strictEqual(await ht1.get("c"), undefined)
 
-  server.close()
+  await ht1.set("d", "4", 4)
+
+  server1.close()
+
+  const server2 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server2.init()
+
+  let resolve2
+  const promise2 = new Promise(resolve => (resolve2 = resolve))
+  server2.listen(7360, resolve2)
+  await promise2
+
+  const ht2 = new DiskSortedHashTableClient({
+    serverUrl: "http://localhost:7360",
+    tableName: "Table2",
+    sortValueType: "number",
+    degree: 2,
+  })
+
+  const valueD = await ht2.get("d")
+  assert.equal(valueD, "4")
+
+  server2.close()
+}
+
+async function test2() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server1.init()
+
+  let resolve1
+  const promise1 = new Promise(resolve => (resolve1 = resolve))
+  server1.listen(7361, resolve1)
+  await promise1
+
+  const ht1 = new DiskHashTableClient({
+    serverUrl: "http://localhost:7361",
+    tableName: "Table3",
+  })
+
+  const response1 = await ht1.http.POST(`/${this.tableName}/x`, {
+    headers: {
+      "Client-Name": "Unknown",
+    },
+  })
+  assert.equal(response1.status, 403)
+  const message1 = await Readable.Text(response1)
+  assert.equal(message1, "Forbidden: Client-Name")
+
+  const response2 = await ht1.http.POST(`/${this.tableName}/x`, {
+    headers: {
+      "Client-Name": "DiskHashTableClient",
+    },
+  })
+  assert.equal(response2.status, 403)
+  const message2 = await Readable.Text(response2)
+  assert.equal(message2, "Forbidden: Hash Table Method")
+
+  server1.close()
+
+  const server2 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server2.init()
+
+  let resolve2
+  const promise2 = new Promise(resolve => (resolve2 = resolve))
+  server2.listen(7362, resolve2)
+  await promise2
+
+  const ht2 = new DiskHashTableClient({
+    serverUrl: "http://localhost:7362",
+    tableName: "Table3",
+  })
+
+  const response3 = await ht2.http.POST(`/${this.tableName}/x`, {
+    headers: {
+      "Client-Name": "Unknown",
+    },
+  })
+  assert.equal(response3.status, 403)
+  const message3 = await Readable.Text(response3)
+  assert.equal(message3, "Forbidden: Client-Name")
+
+  const response4 = await ht2.http.POST(`/${this.tableName}/x/x`, {
+    headers: {
+      "Client-Name": "Unknown",
+    },
+  })
+  assert.equal(response4.status, 404)
+  const message4 = await Readable.Text(response4)
+  assert.equal(message4, "Not Found")
+
+  Readable.JSON = () => {
+    throw new Error("Test Error")
+  }
+
+  await assert.rejects(() => ht2.get("a"), new Error("Test Error"))
+
+  server2.close()
 }
 
 async function test() {
   await test0()
   await test1()
+  await test2()
   console.log("Success")
 }
 

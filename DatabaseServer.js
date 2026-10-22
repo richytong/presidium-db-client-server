@@ -2,6 +2,7 @@
  * Presidium DB Client and Server may be freely distributed under the CFOSS license.
  */
 
+require("rubico/global")
 const HTTP = require("presidium/HTTP")
 const DiskHashTable = require("presidium/DiskHashTable")
 const DatabaseHandler = require("./DatabaseHandler")
@@ -65,7 +66,17 @@ class DatabaseServer {
       hts: this.hts,
     })
 
-    this.server = HTTP.Server(databaseHandler)
+    const handler = tryCatch(
+      databaseHandler,
+      function errorHandler(error, request, response) {
+        response.writeHead(error.code ?? 500, {
+          "Content-Type": "text/plain",
+        })
+        response.end(error.message)
+      }
+    )
+
+    this.server = HTTP.Server(handler)
   }
 
   /**
