@@ -41,6 +41,7 @@ class DiskHashTableClient {
   async clear() {
     const response = await this.http.POST(`/${this.tableName}/clear`, {
       headers: {
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
       },
     })
@@ -60,10 +61,13 @@ class DiskHashTableClient {
   async set(key, value) {
     const response = await this.http.POST(`/${this.tableName}/set`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": Buffer.isBuffer(value)
+          ? "application/octet-stream"
+          : "text/plain",
         "Client-Name": "DiskHashTableClient",
+        "Key": key,
       },
-      body: JSON.stringify({ key, value }),
+      body: value,
     })
     await handleServerResponse(response)
   }
@@ -81,10 +85,10 @@ class DiskHashTableClient {
   async get(key) {
     const response = await this.http.POST(`/${this.tableName}/get`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
+        "Key": key,
       },
-      body: JSON.stringify({ key }),
     })
     if (response.status == 499) {
       return undefined
@@ -105,10 +109,10 @@ class DiskHashTableClient {
   async getBinary(key) {
     const response = await this.http.POST(`/${this.tableName}/getBinary`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
+        "Key": key,
       },
-      body: JSON.stringify({ key }),
     })
     return handleServerResponse(response)
   }
@@ -126,10 +130,10 @@ class DiskHashTableClient {
   async delete(key) {
     const response = await this.http.POST(`/${this.tableName}/delete`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
+        "Key": key,
       },
-      body: JSON.stringify({ key }),
     })
     const didDeleteText = await handleServerResponse(response)
     return didDeleteText == "true"
@@ -146,6 +150,7 @@ class DiskHashTableClient {
   async count() {
     const response = await this.http.POST(`/${this.tableName}/count`, {
       headers: {
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
       },
     })
@@ -167,10 +172,10 @@ class DiskHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/iterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
+        ...valueType ? { "Value-Type": valueType } : {},
       },
-      body: JSON.stringify(options),
     })
     if (valueType == "binary") {
       return handleServerResponse(response, {
@@ -198,10 +203,10 @@ class DiskHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/entriesIterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskHashTableClient",
+        ...valueType ? { "Value-Type": valueType } : {},
       },
-      body: JSON.stringify({ valueType }),
     })
 
     if (valueType == "binary") {

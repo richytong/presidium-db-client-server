@@ -6,6 +6,7 @@ require("rubico/global")
 const HTTP = require("presidium/HTTP")
 const handleServerResponse = require("./handleServerResponse")
 const buffersToEntry = require("./buffersToEntry")
+const parseString = require("./parseString")
 
 /**
  * @name DiskSortedHashTableClient
@@ -44,13 +45,14 @@ class DiskSortedHashTableClient {
   async clear() {
     const response = await this.http.POST(`/${this.tableName}/clear`, {
       headers: {
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
     })
     return handleServerResponse(response)
@@ -69,16 +71,20 @@ class DiskSortedHashTableClient {
   async set(key, value, sortValue) {
     const response = await this.http.POST(`/${this.tableName}/set`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": Buffer.isBuffer(value)
+          ? "application/octet-stream"
+          : "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+        "Key": key,
+        "Sort-Value": sortValue,
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify({ key, value, sortValue }),
+      body: value,
     })
     await handleServerResponse(response)
   }
@@ -96,16 +102,16 @@ class DiskSortedHashTableClient {
   async get(key) {
     const response = await this.http.POST(`/${this.tableName}/get`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+        "Key": key,
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify({ key }),
     })
     if (response.status == 499) {
       return undefined
@@ -126,16 +132,16 @@ class DiskSortedHashTableClient {
   async getBinary(key) {
     const response = await this.http.POST(`/${this.tableName}/getBinary`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+        "Key": key,
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify({ key }),
     })
     return handleServerResponse(response)
   }
@@ -157,16 +163,22 @@ class DiskSortedHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/forwardIterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(options, all({
+          "Exclusive-Start-Key": get("exclusiveStartKey"),
+          "Starting-Sort-Value": get("startingSortValue"),
+          "Ending-Sort-Value": get("endingSortValue"),
+          "Value-Type": get("valueType"),
+        }), filter(__), map(parseString)),
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify(options),
     })
     if (valueType == "binary") {
       return handleServerResponse(response, {
@@ -197,16 +209,22 @@ class DiskSortedHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/reverseIterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(options, all({
+          "Exclusive-Start-Key": get("exclusiveStartKey"),
+          "Starting-Sort-Value": get("startingSortValue"),
+          "Ending-Sort-Value": get("endingSortValue"),
+          "Value-Type": get("valueType"),
+        }), filter(__), map(parseString)),
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify(options),
     })
     if (valueType == "binary") {
       return handleServerResponse(response, {
@@ -237,16 +255,22 @@ class DiskSortedHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/forwardEntriesIterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(options, all({
+          "Exclusive-Start-Key": get("exclusiveStartKey"),
+          "Starting-Sort-Value": get("startingSortValue"),
+          "Ending-Sort-Value": get("endingSortValue"),
+          "Value-Type": get("valueType"),
+        }), filter(__), map(parseString)),
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify(options),
     })
     if (valueType == "binary") {
       const iter = await handleServerResponse(response, {
@@ -278,16 +302,22 @@ class DiskSortedHashTableClient {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/reverseEntriesIterator`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(options, all({
+          "Exclusive-Start-Key": get("exclusiveStartKey"),
+          "Starting-Sort-Value": get("startingSortValue"),
+          "Ending-Sort-Value": get("endingSortValue"),
+          "Value-Type": get("valueType"),
+        }), filter(__), map(parseString)),
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify(options),
     })
 
     if (valueType == "binary") {
@@ -319,16 +349,16 @@ class DiskSortedHashTableClient {
   async delete(key) {
     const response = await this.http.POST(`/${this.tableName}/delete`, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+        "Key": key,
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
-      body: JSON.stringify({ key }),
     })
     const didDeleteText = await handleServerResponse(response)
     return didDeleteText == "true"
@@ -345,13 +375,14 @@ class DiskSortedHashTableClient {
   async count() {
     const response = await this.http.POST(`/${this.tableName}/count`, {
       headers: {
+        "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
-        ...this.sortValueType ? {
-          "Sort-Value-Type": this.sortValueType,
-        } : {},
-        ...this.degree ? {
-          "Degree": Number(this.degree),
-        } : {},
+
+        ...pipe(this, all({
+          "Sort-Value-Type": get("sortValueType"),
+          "Degree": get("degree"),
+        }), filter(__), map(parseString)),
+
       },
     })
     return Number(await handleServerResponse(response))

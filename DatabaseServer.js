@@ -9,6 +9,7 @@ const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
 const DatabaseHandler = require("./DatabaseHandler")
 const healthCheckHandler = require("./healthCheckHandler")
 const notFoundHandler = require("./notFoundHandler")
+const errorHandler = require("./errorHandler")
 
 /**
  * @name DatabaseServer
@@ -84,12 +85,7 @@ class DatabaseServer {
 
         notFoundHandler,
       ),
-      function errorHandler(error, request, response) {
-        response.writeHead(error.code ?? 500, {
-          "Content-Type": "text/plain",
-        })
-        response.end(error.message)
-      }
+      errorHandler
     )
 
     const handler = all.series([

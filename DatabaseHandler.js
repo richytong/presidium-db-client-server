@@ -127,7 +127,11 @@ function DatabaseHandler(options) {
       },
 
       eq("set"), async () => {
-        const { key, value, sortValue } = await Readable.JSON(request)
+        const key = request.headers["key"]
+        const sortValue = request.headers["sort-value"]
+        const value = request.headers["content-type"] == "text/plain"
+          ? await Readable.Text(request)
+          : await Readable.Buffer(request)
         await ht.set(key, value, sortValue)
         response.writeHead(200, {
           "Content-Type": "text/plain",
@@ -136,7 +140,7 @@ function DatabaseHandler(options) {
       },
 
       eq("get"), async () => {
-        const { key } = await Readable.JSON(request)
+        const key = request.headers["key"]
         const value = await ht.get(key)
         if (value === undefined) {
           response.writeHead(499, {
@@ -152,7 +156,7 @@ function DatabaseHandler(options) {
       },
 
       eq("getBinary"), async () => {
-        const { key } = await Readable.JSON(request)
+        const key = request.headers["key"]
         const value = await ht.getBinary(key)
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
@@ -161,7 +165,7 @@ function DatabaseHandler(options) {
       },
 
       eq("delete"), async () => {
-        const { key } = await Readable.JSON(request)
+        const key = request.headers["key"]
         const didDelete = await ht.delete(key)
         response.writeHead(200, {
           "Content-Type": "text/plain",
@@ -178,7 +182,8 @@ function DatabaseHandler(options) {
       },
 
       eq("iterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const options = filter({ valueType }, __)
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
@@ -192,7 +197,8 @@ function DatabaseHandler(options) {
       },
 
       eq("entriesIterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const options = filter({ valueType }, __)
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
@@ -208,7 +214,17 @@ function DatabaseHandler(options) {
       },
 
       eq("forwardIterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const exclusiveStartKey = request.headers["exclusive-start-key"]
+        const startingSortValue = request.headers["starting-sort-value"]
+        const endingSortValue = request.headers["ending-sort-value"]
+        const options = filter({
+          valueType,
+          exclusiveStartKey,
+          startingSortValue,
+          endingSortValue,
+        }, __)
+
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
@@ -222,7 +238,17 @@ function DatabaseHandler(options) {
       },
 
       eq("reverseIterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const exclusiveStartKey = request.headers["exclusive-start-key"]
+        const startingSortValue = request.headers["starting-sort-value"]
+        const endingSortValue = request.headers["ending-sort-value"]
+        const options = filter({
+          valueType,
+          exclusiveStartKey,
+          startingSortValue,
+          endingSortValue,
+        }, __)
+
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
@@ -236,7 +262,17 @@ function DatabaseHandler(options) {
       },
 
       eq("forwardEntriesIterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const exclusiveStartKey = request.headers["exclusive-start-key"]
+        const startingSortValue = request.headers["starting-sort-value"]
+        const endingSortValue = request.headers["ending-sort-value"]
+        const options = filter({
+          valueType,
+          exclusiveStartKey,
+          startingSortValue,
+          endingSortValue,
+        }, __)
+
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
@@ -254,7 +290,17 @@ function DatabaseHandler(options) {
       },
 
       eq("reverseEntriesIterator"), async () => {
-        const options = await Readable.JSON(request)
+        const valueType = request.headers["value-type"]
+        const exclusiveStartKey = request.headers["exclusive-start-key"]
+        const startingSortValue = request.headers["starting-sort-value"]
+        const endingSortValue = request.headers["ending-sort-value"]
+        const options = filter({
+          valueType,
+          exclusiveStartKey,
+          startingSortValue,
+          endingSortValue,
+        }, __)
+
         response.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Encoding": "utf8",
