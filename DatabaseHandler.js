@@ -111,7 +111,12 @@ function DatabaseHandler(options) {
     request.pathSegments = request.path.slice(1).split("/")
     request.pathDepth = request.pathSegments.length
 
-    if (request.pathDepth == 2) {
+    if (request.path == "/health") {
+      response.writeHead(200, {
+        "Content-Type": "text/plain",
+      })
+      response.end("OK")
+    } else if (request.pathDepth == 2) {
       const tableName = request.pathSegments[0]
       const fname = request.pathSegments[1]
       const ht = hts.get(tableName)

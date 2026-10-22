@@ -648,11 +648,19 @@ async function test2() {
   const message4 = await Readable.Text(response4)
   assert.equal(message4, "Not Found")
 
+  const ReadableJSON = Readable.JSON
   Readable.JSON = () => {
     throw new Error("Test Error")
   }
 
   await assert.rejects(() => ht2.get("a"), new Error("Test Error"))
+
+  Readable.JSON = ReadableJSON
+
+  const response5 = await ht2.http.GET("/health")
+  assert.equal(response5.status, 200)
+  const message5 = await Readable.Text(response5)
+  assert.equal(message5, "OK")
 
   server2.close()
 }
