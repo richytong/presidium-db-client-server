@@ -24,7 +24,7 @@ server.listen(5000, () => {
 })
 
 const sessionHt = new DiskHashTableClient({
-  serverUrl: "http://localhost:7357",
+  serverUrl: "http://localhost:5000",
   tableName: "Session",
 })
 
@@ -54,7 +54,7 @@ server.listen(5000, () => {
 })
 
 const postHt = new DiskSortedHashTableClient({
-  serverUrl: "http://localhost:7357",
+  serverUrl: "http://localhost:5000",
   tableName: "Post",
   sortValueType: "number",
 })
