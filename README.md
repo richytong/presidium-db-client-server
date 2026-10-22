@@ -8,20 +8,41 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 [![codecov](https://codecov.io/gh/richytong/presidium-db-client-server/graph/badge.svg?token=07P6G8GIOQ)](https://codecov.io/gh/richytong/presidium-db-client-server)
 [![npm version](https://img.shields.io/npm/v/presidium-db-client-server.svg?style=flat)](https://www.npmjs.com/package/presidium-db-client-server)
 
-Presidium DB Client and Server. Host your own distributed database.
+Presidium DB Client and Server.
 
+## Host your own distributed database
 ```javascript
-const DatabaseServer = require("presidium-db-client-server/DatabaseServer")
-const DiskHashTableClient = require("presidium-db-client-server/DiskHashTableClient")
+const DatabaseServer = require("presidium/DatabaseServer")
 
 const server = new DatabaseServer({
   databasePath: `${__dirname}/database`,
 })
 await server.init()
 
+await server.registerDiskHashTable("Session", {
+  storagePath: `${this.databasePath}/Session/storage`,
+  headerPath: `${this.databasePath}/Session/header`,
+  initialLength: 536870912,
+  itemSize: 512,
+})
+
+await server.registerDiskSortedHashTable("Post", {
+  storagePath: `${this.databasePath}/Post/storage`,
+  headerPath: `${this.databasePath}/Post/header`,
+  initialLength: 1048576,
+  itemSize: 8192,
+  sortValueType: "number",
+  degree: 2,
+})
+
 server.listen(5000, () => {
   console.log("Database server listening on port 5000")
 })
+```
+
+## Call a database table from anywhere
+```javascript
+const DiskHashTableClient = require("presidium/DiskHashTableClient")
 
 const sessionHt = new DiskHashTableClient({
   serverUrl: "http://localhost:5000",
@@ -38,8 +59,7 @@ const sessionJson = await sessionHt.get(accessToken)
 await sessionHt.delete(accessToken)
 ```
 
-Query your distributed database.
-
+## Query a database table from anywhere
 ```javascript
 const DiskSortedHashTableClient = require("presidium-db-client-server/DiskSortedHashTableClient")
 
