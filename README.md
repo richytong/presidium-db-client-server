@@ -1,7 +1,7 @@
 # Presidium DB Client and Server
 ![presidium](https://rubico.land/assets/presidium-logo-3-w200.jpg)
 
-Source code: [GitHub](https://github.com/richytong/presidium-websocket) |
+Source code: [GitHub](https://github.com/richytong/presidium-db-client-server) |
 License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 
 ![Node.js CI](https://github.com/richytong/presidium-db-client-server/workflows/Node.js%20CI/badge.svg)
