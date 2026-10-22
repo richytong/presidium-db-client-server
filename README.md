@@ -8,7 +8,7 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 [![codecov](https://codecov.io/gh/richytong/presidium-db-client-server/graph/badge.svg?token=07P6G8GIOQ)](https://codecov.io/gh/richytong/presidium-db-client-server)
 [![npm version](https://img.shields.io/npm/v/presidium-db-client-server.svg?style=flat)](https://www.npmjs.com/package/presidium-db-client-server)
 
-Presidium DB Client and Server.
+Presidium DB Client and Server. Host your own distributed database.
 
 ```javascript
 const DatabaseServer = require("presidium-db-client-server/DatabaseServer")
@@ -38,7 +38,7 @@ const sessionJson = await sessionHt.get(accessToken)
 await sessionHt.delete(accessToken)
 ```
 
-Query with DiskSortedHashTableClient.
+Query your distributed database.
 
 ```javascript
 const DatabaseServer = require("presidium-db-client-server/DatabaseServer")
