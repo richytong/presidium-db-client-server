@@ -51,9 +51,9 @@ async function test0() {
 
   assert.strictEqual(count3, 0)
 
-  await ht1.set("a", "1")
-  await ht1.set("b", "2")
-  await ht1.set("c", "3")
+  await ht1.set("a", Buffer.from("1"))
+  await ht1.set("b", Buffer.from("2"))
+  await ht1.set("c", Buffer.from("3"))
 
   const count4 = await ht1.count()
 
@@ -227,9 +227,9 @@ async function test1() {
 
   assert.strictEqual(count3, 0)
 
-  await ht1.set("a", "1", 1)
-  await ht1.set("b", "2", 2)
-  await ht1.set("c", "3", 3)
+  await ht1.set("a", Buffer.from("1"), 1)
+  await ht1.set("b", Buffer.from("2"), 2)
+  await ht1.set("c", Buffer.from("3"), 3)
 
   const count4 = await ht1.count()
 
