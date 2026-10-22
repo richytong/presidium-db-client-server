@@ -38,6 +38,58 @@ const sessionJson = await sessionHt.get(accessToken)
 await sessionHt.delete(accessToken)
 ```
 
+Query with DiskSortedHashTableClient.
+
+```javascript
+const DatabaseServer = require("presidium-db-client-server/DatabaseServer")
+const DiskSortedHashTableClient = require("presidium-db-client-server/DiskSortedHashTableClient")
+
+const server = new DatabaseServer({
+  databasePath: `${__dirname}/database`,
+})
+await server.init()
+
+server.listen(5000, () => {
+  console.log("Database server listening on port 5000")
+})
+
+const postHt = new DiskSortedHashTableClient({
+  serverUrl: "http://localhost:7357",
+  tableName: "Post",
+  sortValueType: "number",
+})
+
+const post1 = {
+  id: "post-1",
+  images: ["/assets/post-1/image-1.jpg"],
+  content: "First post",
+  time: Date.now(),
+}
+
+const post2 = {
+  id: "post-2",
+  images: ["/assets/post-2/image-2.jpg"],
+  content: "Second post",
+  time: Date.now(),
+}
+
+const post3 = {
+  id: "post-3",
+  images: ["/assets/post-3/image-3.jpg"],
+  content: "Third post",
+  time: Date.now(),
+}
+
+await postHt.set(post1.id, JSON.stringify(post1), post1.time)
+await postHt.set(post2.id, JSON.stringify(post2), post2.time)
+await postHt.set(post3.id, JSON.stringify(post3), post3.time)
+
+const myPosts = []
+for await (const postJson of postHt.reverseIterator()) {
+  myPosts.push(JSON.parse(postJson))
+}
+```
+
 ## Docs
 Coming soon.
 
