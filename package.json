@@ -40,5 +40,8 @@
   "dependencies": {
     "presidium": "^4.5.0",
     "rubico": "^2.20.0"
+  },
+  "devDependencies": {
+    "codecov": "^3.8.2"
   }
 }
