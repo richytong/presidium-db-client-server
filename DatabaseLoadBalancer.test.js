@@ -49,6 +49,8 @@ async function test0() {
 
   loadBalancer.close()
   server.close()
+
+  assert(loadBalancer.closed)
 }
 
 async function test1() {

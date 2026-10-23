@@ -33,6 +33,7 @@ class DatabaseLoadbalancer {
     this.serverIps = options.serverIps
     this.handlers = handlers
     this.clients = new Map()
+    this.closed = false
 
     const router = tryCatch(
       switchCase(
@@ -88,6 +89,7 @@ class DatabaseLoadbalancer {
    */
   close() {
     this.server.close()
+    this.closed = true
   }
 
 }
