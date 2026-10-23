@@ -3,7 +3,7 @@
  */
 
 require("rubico/global")
-const HTTP = require("HTTP")
+const HTTP = require("presidium/HTTP")
 const loadBalancerHandler = require("./loadBalancerHandler")
 const healthCheckHandler = require("./healthCheckHandler")
 const notFoundHandler = require("./notFoundHandler")
@@ -19,7 +19,7 @@ const errorHandler = require("./errorHandler")
  * HTTP.Handler(HTTP.Request, HTTP.Response) -> ()
  *
  * new DatabaseLoadbalancer(
- *   hash(tableName string, key, string) -> Promise|number,
+ *   hash(tableName string, key string, length number) -> Promise|number,
  *   options {
  *     serverIps: Array<string>,
  *   },
@@ -29,9 +29,10 @@ const errorHandler = require("./errorHandler")
  */
 class DatabaseLoadbalancer {
   constructor(hash, options, ...handlers) {
-    this.serverIps = options.serverIps
     this.hash = hash
-    this.https = new Map()
+    this.serverIps = options.serverIps
+    this.handlers = handlers
+    this.clients = new Map()
 
     const router = tryCatch(
       switchCase(
@@ -39,7 +40,7 @@ class DatabaseLoadbalancer {
         healthCheckHandler,
 
         request => request.pathDepth == 2,
-        curry.call(this, loadBalancerHandler),
+        curry.call(loadBalancerHandler, this),
 
         notFoundHandler,
       ),
@@ -62,8 +63,33 @@ class DatabaseLoadbalancer {
     ])
 
     this.server = HTTP.Server(handler)
-
   }
+
+  /**
+   * @name listen
+   *
+   * @docs
+   * ```specscript
+   * listen(port number) -> ()
+   * listen(port number, callback function) -> ()
+   * ```
+   */
+  listen(port, callback) {
+    this.server.listen(port, callback)
+  }
+
+  /**
+   * @name close
+   *
+   * @docs
+   * ```specscript
+   * close() -> ()
+   * ```
+   */
+  close() {
+    this.server.close()
+  }
+
 }
 
 module.exports = DatabaseLoadbalancer

@@ -14,8 +14,10 @@
     "AsyncIterator.js",
     "BinaryEntriesStream.js",
     "BinaryStream.js",
-    "DatabaseHandler.js",
     "DatabaseServer.js",
+    "DatabaseHandler.js",
+    "DatabaseLoadBalancer.js",
+    "loadBalancerHandler.js",
     "DiskHashTableClient.js",
     "DiskSortedHashTableClient.js",
     "TextEntriesStream.js",
@@ -23,7 +25,9 @@
     "buffersToEntry.js",
     "handleServerResponse.js",
     "healthCheckHandler.js",
-    "notFoundHandler.js"
+    "notFoundHandler.js",
+    "errorHandler.js",
+    "parseString.js"
   ],
   "keywords": [
     "presidium",

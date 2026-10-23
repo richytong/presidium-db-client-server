@@ -589,7 +589,7 @@ async function test2() {
     tableName: "Table3",
   })
 
-  const response1 = await ht1.http.POST(`/${this.tableName}/x`, {
+  const response1 = await ht1.http.POST(`/${ht1.tableName}/x`, {
     headers: {
       "Client-Name": "Unknown",
     },
@@ -598,7 +598,7 @@ async function test2() {
   const message1 = await Readable.Text(response1)
   assert.equal(message1, "Forbidden: Client-Name")
 
-  const response2 = await ht1.http.POST(`/${this.tableName}/x`, {
+  const response2 = await ht1.http.POST(`/${ht1.tableName}/x`, {
     headers: {
       "Client-Name": "DiskHashTableClient",
     },
@@ -630,7 +630,7 @@ async function test2() {
     tableName: "Table3",
   })
 
-  const response3 = await ht2.http.POST(`/${this.tableName}/x`, {
+  const response3 = await ht2.http.POST(`/${ht2.tableName}/x`, {
     headers: {
       "Client-Name": "Unknown",
     },
@@ -639,7 +639,7 @@ async function test2() {
   const message3 = await Readable.Text(response3)
   assert.equal(message3, "Forbidden: Client-Name")
 
-  const response4 = await ht2.http.POST(`/${this.tableName}/x/x`, {
+  const response4 = await ht2.http.POST(`/${ht2.tableName}/x/x`, {
     headers: {
       "Client-Name": "Unknown",
     },
@@ -648,14 +648,16 @@ async function test2() {
   const message4 = await Readable.Text(response4)
   assert.equal(message4, "Not Found")
 
-  const ReadableText = Readable.Text
-  Readable.Text = () => {
+  await ht2.set("a", 1)
+
+  const ht2get = server2.hts.get(ht2.tableName).get
+  server2.hts.get(ht2.tableName).get = () => {
     throw new Error("Test Error")
   }
 
-  await assert.rejects(() => ht2.set("a", "1"), new Error("Test Error"))
+  await assert.rejects(() => ht2.get("a"), new Error("Test Error"))
 
-  Readable.Text = ReadableText
+  server2.hts.get(ht2.tableName).get = ht2get
 
   const response5 = await ht2.http.GET("/health")
   assert.equal(response5.status, 200)
