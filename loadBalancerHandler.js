@@ -28,10 +28,14 @@ async function loadBalancerHandler(request, response) {
     this.clients.set(serverIp, client)
   }
 
+  console.log("loadBalancerHandler", serverIp, index, this.serverIps)
+
   const serverResponse = await client[request.method](request.url, {
     headers: request.headers,
     body: request,
   })
+
+  console.log("loadBalancerHandler response", serverResponse.status, serverResponse.headers)
 
   response.writeHead(serverResponse.status, serverResponse.headers)
   serverResponse.pipe(response)
