@@ -20,7 +20,6 @@ async function loadBalancerHandler(request, response) {
   }
 
   const serverIp = this.serverIps[index]
-  console.log("loadBalancerHandler", serverIp, index, this.serverIps)
   let client
   if (this.clients.has(serverIp)) {
     client = this.clients.get(serverIp)
