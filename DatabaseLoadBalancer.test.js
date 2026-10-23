@@ -115,9 +115,9 @@ async function test1() {
 
   const loadBalancer = new DatabaseLoadBalancer(hash, {
     serverIps: [
-      "http://localhost:7358",
-      "http://localhost:7359",
-      "http://localhost:7360",
+      "localhost:7358",
+      "localhost:7359",
+      "localhost:7360",
     ],
   }, () => {
     n += 1

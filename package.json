@@ -44,7 +44,7 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "presidium": "^4.5.0",
+    "presidium": ">=4.9.1",
     "rubico": "^2.21.0"
   },
   "devDependencies": {
