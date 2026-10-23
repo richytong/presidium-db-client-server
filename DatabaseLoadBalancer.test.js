@@ -97,7 +97,10 @@ async function test1() {
   server3.listen(7360, resolve3)
   await promise3
 
-  function hash(tableName, key) {
+  function hash(tableName, key, length) {
+    if (length == null) {
+      throw new Error("length")
+    }
     if (key <= "i") {
       return 0
     }

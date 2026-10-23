@@ -9,7 +9,6 @@
  * ```
  */
 function errorHandler(error, request, response) {
-  console.error(error)
   response.writeHead(error.code ?? 500, {
     "Content-Type": "text/plain",
   })

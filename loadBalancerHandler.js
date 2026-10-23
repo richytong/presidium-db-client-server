@@ -14,7 +14,7 @@ async function loadBalancerHandler(request, response) {
   const tableName = request.pathSegments[0]
   const key = request.headers["key"]
 
-  let index = this.hash(tableName, key)
+  let index = this.hash(tableName, key, this.serverIps.length)
   if (typeof index.then == "function") {
     index = await index
   }
