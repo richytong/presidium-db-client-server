@@ -100,6 +100,27 @@ for await (const postJson of postHt.reverseIterator()) {
 }
 ```
 
+## Load balance your distributed database
+```javascript
+const DatabaseLoadBalancer = require("presidium/DatabaseLoadBalancer")
+
+function hash(tableName, key, length) {
+  const value = `${tableName}${key}`
+  const digest = crypto.createHash("md5").update(value).digest()
+  const integerHash = digest.readUInt16BE(0)
+  const index = Math.floor(integerHash / 65535 * length)
+  return index
+}
+
+const loadBalancer = new DatabaseLoadBalancer(hash, {
+  serverIps: ["10.0.0.1:8080", "10.0.0.2:8080"],
+})
+
+loadBalancer.listen(6333, () => {
+  console.log("Database load balancer listening on port 6333")
+})
+```
+
 ## Docs
 Coming soon.
 
