@@ -12,7 +12,7 @@ function errorHandler(error, request, response) {
   response.writeHead(error.code ?? 500, {
     "Content-Type": "text/plain",
   })
-  response.end(error.stack)
+  response.end(error.message)
 }
 
 module.exports = errorHandler

@@ -596,7 +596,7 @@ async function test2() {
   })
   assert.equal(response1.status, 403)
   const message1 = await Readable.Text(response1)
-  assert(message1.startsWith("Error: Forbidden: Client-Name"), message1)
+  assert.equal(message1, "Forbidden: Client-Name")
 
   const response2 = await ht1.http.POST(`/${ht1.tableName}/x`, {
     headers: {
@@ -605,7 +605,7 @@ async function test2() {
   })
   assert.equal(response2.status, 403)
   const message2 = await Readable.Text(response2)
-  assert(message2.startsWith("Error: Forbidden: Hash Table Method"))
+  assert.equal(message2, "Forbidden: Hash Table Method")
 
   server1.close()
 
@@ -637,7 +637,7 @@ async function test2() {
   })
   assert.equal(response3.status, 403)
   const message3 = await Readable.Text(response3)
-  assert(message3.startsWith("Error: Forbidden: Client-Name"), message3)
+  assert.equal(message3, "Forbidden: Client-Name")
 
   const response4 = await ht2.http.POST(`/${ht2.tableName}/x/x`, {
     headers: {
@@ -655,10 +655,7 @@ async function test2() {
     throw new Error("Test Error")
   }
 
-  await assert.rejects(() => ht2.get("a"), error => {
-    assert(error.message.startsWith("Error: Test Error"))
-    return true
-  })
+  await assert.rejects(() => ht2.get("a"), new Error("Test Error"))
 
   server2.hts.get(ht2.tableName).get = ht2get
 
