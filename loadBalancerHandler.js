@@ -1,4 +1,27 @@
 const HTTP = require("presidium/HTTP")
+const Readable = require("presidium/Readable")
+const stream = require("stream")
+
+/**
+ * @name getClient
+ *
+ * @docs
+ * ```specscript
+ * module HTTP "https://presidium.services/docs/HTTP"
+ *
+ * getClient(serverIp string) -> client HTTP
+ * ```
+ */
+function getClient(serverIp) {
+  let client
+  if (this.clients.has(serverIp)) {
+    client = this.clients.get(serverIp)
+  } else {
+    client = new HTTP(serverIp)
+    this.clients.set(serverIp, client)
+  }
+  return client
+}
 
 /**
  * @name loadBalancerHandler
@@ -19,22 +42,54 @@ async function loadBalancerHandler(request, response) {
     index = await index
   }
 
-  const serverIp = this.serverIps[index]
-  let client
-  if (this.clients.has(serverIp)) {
-    client = this.clients.get(serverIp)
+  const serverIpOrIps = this.serverIps[index]
+
+  if (Array.isArray(serverIpOrIps)) {
+    const passthroughStreams = []
+    for (let i = 0; i < serverIpOrIps.length; i++) {
+      passthroughStreams.push(new stream.PassThrough())
+    }
+
+    serverIpOrIps.forEach(async (serverIp, index) => {
+      const client = getClient.call(this, serverIp)
+
+      const serverResponse = await client[request.method](request.url, {
+        headers: request.headers,
+        body: passthroughStreams[index],
+      })
+
+      if (index == 0) {
+        response.writeHead(serverResponse.status, serverResponse.headers)
+        serverResponse.pipe(response)
+      } else {
+        await Readable.Text(serverResponse)
+      }
+    })
+
+    request.on("data", chunk => {
+      passthroughStreams.forEach(stream => {
+        stream.write(chunk)
+      })
+    })
+
+    request.on("end", () => {
+      passthroughStreams.forEach(stream => {
+        stream.end()
+      })
+    })
+
   } else {
-    client = new HTTP(serverIp)
-    this.clients.set(serverIp, client)
+    const client = getClient.call(this, serverIpOrIps)
+
+    const serverResponse = await client[request.method](request.url, {
+      headers: request.headers,
+      body: request,
+    })
+
+    response.writeHead(serverResponse.status, serverResponse.headers)
+    serverResponse.pipe(response)
   }
 
-  const serverResponse = await client[request.method](request.url, {
-    headers: request.headers,
-    body: request,
-  })
-
-  response.writeHead(serverResponse.status, serverResponse.headers)
-  serverResponse.pipe(response)
 }
 
 module.exports = loadBalancerHandler

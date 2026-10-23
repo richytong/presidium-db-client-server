@@ -197,9 +197,78 @@ async function test1() {
   server3.close()
 }
 
+async function test2() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+  })
+  await server1.init()
+
+  let resolve1
+  const promise1 = new Promise(resolve => (resolve1 = resolve))
+  server1.listen(7361, resolve1)
+  await promise1
+
+  const server2 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+  })
+  await server2.init()
+
+  let resolve2
+  const promise2 = new Promise(resolve => (resolve2 = resolve))
+  server2.listen(7362, resolve2)
+  await promise2
+
+  const server3 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+  })
+  await server3.init()
+
+  let resolve3
+  const promise3 = new Promise(resolve => (resolve3 = resolve))
+  server3.listen(7363, resolve3)
+  await promise3
+
+  const loadBalancer = new DatabaseLoadBalancer(() => 0, {
+    serverIps: [[
+      "localhost:7361",
+      "localhost:7362",
+      "localhost:7363",
+    ]],
+  })
+
+  let resolve4
+  const promise4 = new Promise(resolve => (resolve4 = resolve))
+  loadBalancer.listen(6334, resolve4)
+  await promise4
+
+  const ht1 = new DiskHashTableClient({
+    serverUrl: "http://localhost:6334",
+    tableName: "Table1",
+  })
+
+  await ht1.set("a", "1")
+  await ht1.set("b", "2")
+  await ht1.set("c", "3")
+
+  const valueA = await ht1.get("a")
+  const valueB = await ht1.get("b")
+  const valueC = await ht1.get("c")
+
+  loadBalancer.close()
+  server1.close()
+  server2.close()
+  server3.close()
+}
+
 async function test() {
   await test0()
   await test1()
+  await test2()
   console.log("Success")
 }
 

@@ -21,7 +21,7 @@ const errorHandler = require("./errorHandler")
  * new DatabaseLoadbalancer(
  *   hash(tableName string, key string, length number) -> Promise|number,
  *   options {
- *     serverIps: Array<string>,
+ *     serverIps: Array<string>|Array<Array<string>>,
  *   },
  *   ...handlers Arguments<HTTP.Handler>
  * )
