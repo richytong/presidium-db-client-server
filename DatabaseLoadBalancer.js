@@ -10,7 +10,7 @@ const notFoundHandler = require("./notFoundHandler")
 const errorHandler = require("./errorHandler")
 
 /**
- * @name DatabaseLoadbalancer
+ * @name DatabaseLoadBalancer
  *
  * @docs
  * ```specscript
@@ -18,7 +18,7 @@ const errorHandler = require("./errorHandler")
  *
  * HTTP.Handler(HTTP.Request, HTTP.Response) -> ()
  *
- * new DatabaseLoadbalancer(
+ * new DatabaseLoadBalancer(
  *   hash(tableName string, key string, length number) -> Promise|number,
  *   options {
  *     serverIps: Array<string>|Array<Array<string>>,
@@ -27,7 +27,7 @@ const errorHandler = require("./errorHandler")
  * )
  * ```
  */
-class DatabaseLoadbalancer {
+class DatabaseLoadBalancer {
   constructor(hash, options, ...handlers) {
     this.hash = hash
     this.serverIps = options.serverIps
@@ -94,4 +94,4 @@ class DatabaseLoadbalancer {
 
 }
 
-module.exports = DatabaseLoadbalancer
+module.exports = DatabaseLoadBalancer
