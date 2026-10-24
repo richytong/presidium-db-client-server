@@ -15,7 +15,7 @@
     "BinaryEntriesStream.js",
     "BinaryStream.js",
     "DatabaseServer.js",
-    "DatabaseHandler.js",
+    "databaseHandler.js",
     "DatabaseLoadBalancer.js",
     "loadBalancerHandler.js",
     "DiskHashTableClient.js",

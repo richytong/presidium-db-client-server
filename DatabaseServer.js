@@ -6,7 +6,7 @@ require("rubico/global")
 const HTTP = require("presidium/HTTP")
 const DiskHashTable = require("presidium/DiskHashTable")
 const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
-const DatabaseHandler = require("./DatabaseHandler")
+const databaseHandler = require("./databaseHandler")
 const healthCheckHandler = require("./healthCheckHandler")
 const notFoundHandler = require("./notFoundHandler")
 const errorHandler = require("./errorHandler")
@@ -63,25 +63,13 @@ class DatabaseServer {
     await manifestHt.init()
     this.manifestHt = manifestHt
 
-    const databaseHandler = DatabaseHandler({
-      databasePath: this.databasePath,
-      manifestTableName: this.manifestTableName,
-      manifestTableInitialLength: this.manifestTableInitialLength,
-      manifestTableItemSize: this.manifestTableItemSize,
-      defaultTableInitialLength: this.defaultTableInitialLength,
-      defaultTableItemSize: this.defaultTableItemSize,
-      defaultDiskSortedHashTableDegree: this.defaultDiskSortedHashTableDegree,
-      manifestHt: this.manifestHt,
-      hts: this.hts,
-    })
-
     const router = tryCatch(
       switchCase(
         request => request.path == "/health",
         healthCheckHandler,
 
         request => request.pathDepth == 2,
-        databaseHandler,
+        curry.call(databaseHandler, this),
 
         notFoundHandler,
       ),

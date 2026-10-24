@@ -1,5 +1,6 @@
 const assert = require("assert")
 const fs = require("fs")
+const http = require("http")
 const DatabaseLoadBalancer = require("./DatabaseLoadBalancer")
 const DatabaseServer = require("./DatabaseServer")
 const DiskHashTableClient = require("./DiskHashTableClient")
@@ -68,10 +69,7 @@ async function test1() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7358, resolve1)
-  await promise1
+  server1.listen(7358)
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
@@ -80,10 +78,7 @@ async function test1() {
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7359, resolve2)
-  await promise2
+  server2.listen(7359)
 
   const server3 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
@@ -92,10 +87,7 @@ async function test1() {
   })
   await server3.init()
 
-  let resolve3
-  const promise3 = new Promise(resolve => (resolve3 = resolve))
-  server3.listen(7360, resolve3)
-  await promise3
+  server3.listen(7360)
 
   function hash(tableName, key, length) {
     if (length == null) {
@@ -208,30 +200,21 @@ async function test2() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7361, resolve1)
-  await promise1
+  server1.listen(7361)
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7362, resolve2)
-  await promise2
+  server2.listen(7362)
 
   const server3 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
   await server3.init()
 
-  let resolve3
-  const promise3 = new Promise(resolve => (resolve3 = resolve))
-  server3.listen(7363, resolve3)
-  await promise3
+  server3.listen(7363)
 
   const loadBalancer = new DatabaseLoadBalancer(() => 0, {
     serverIps: [[
@@ -259,6 +242,79 @@ async function test2() {
   const valueB = await ht1.get("b")
   const valueC = await ht1.get("c")
 
+  assert.equal(valueA, "1")
+  assert.equal(valueB, "2")
+  assert.equal(valueC, "3")
+
+  loadBalancer.close()
+  server1.close()
+  server2.close()
+  server3.close()
+}
+
+async function test3() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+  })
+  await server1.init()
+
+  server1.listen(7364)
+
+  const server2 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+  })
+  await server2.init()
+
+  server2.listen(7365)
+
+  const server3 = http.createServer((request, response) => {
+    response.writeHead(500, {
+      "Content-Type": "text/plain",
+    })
+    response.end("Test Internal Server Error")
+  })
+
+  server3.listen(7366)
+
+  const loadBalancer = new DatabaseLoadBalancer(() => 0, {
+    serverIps: [[
+      "localhost:7364",
+      "localhost:7365",
+      "localhost:7366",
+    ]],
+  })
+
+  loadBalancer.listen(6335)
+
+  const ht1 = new DiskHashTableClient({
+    serverUrl: "http://localhost:6335",
+    tableName: "Table1",
+  })
+
+  consoleError = console.error
+  const errors = []
+  console.error = error => {
+    errors.push(error)
+  }
+
+  await ht1.set("a", "1")
+
+  assert.equal(errors.length, 1)
+  assert.equal(errors[0].message, "Test Internal Server Error")
+
+  await ht1.set("b", "2")
+
+  assert.equal(errors.length, 2)
+  assert.equal(errors[0].message, "Test Internal Server Error")
+  assert.equal(errors[1].message, "Test Internal Server Error")
+
+  console.error = consoleError
+
   loadBalancer.close()
   server1.close()
   server2.close()
@@ -269,6 +325,7 @@ async function test() {
   await test0()
   await test1()
   await test2()
+  await test3()
   console.log("Success")
 }
 

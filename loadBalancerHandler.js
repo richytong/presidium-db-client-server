@@ -50,7 +50,19 @@ async function loadBalancerHandler(request, response) {
       passthroughStreams.push(new stream.PassThrough())
     }
 
-    serverIpOrIps.forEach(async (serverIp, index) => {
+    request.on("data", chunk => {
+      passthroughStreams.forEach(stream => {
+        stream.write(chunk)
+      })
+    })
+
+    request.on("end", () => {
+      passthroughStreams.forEach(stream => {
+        stream.end()
+      })
+    })
+
+    await forEach(serverIpOrIps, async (serverIp, index) => {
       const client = getClient.call(this, serverIp)
 
       const serverResponse = await client[request.method](request.url, {
@@ -62,20 +74,12 @@ async function loadBalancerHandler(request, response) {
         response.writeHead(serverResponse.status, serverResponse.headers)
         serverResponse.pipe(response)
       } else {
-        await Readable.Text(serverResponse)
+        const text = await Readable.Text(serverResponse)
+        if (serverResponse.ok) {
+        } else {
+          console.error(new Error(text))
+        }
       }
-    })
-
-    request.on("data", chunk => {
-      passthroughStreams.forEach(stream => {
-        stream.write(chunk)
-      })
-    })
-
-    request.on("end", () => {
-      passthroughStreams.forEach(stream => {
-        stream.end()
-      })
     })
 
   } else {
