@@ -1,6 +1,6 @@
 {
   "name": "presidium-db-client-server",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "Presidium DB client and server",
   "author": "Richard Tong",
   "license": "CFOSS",
