@@ -244,14 +244,6 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * forwardEntriesIterator(options {
-   *   exclusiveStartKey: string, 
-   *   startingSortValue: string|number|Array<string|number>,
-   *   endingSortValue: string|number|Array<string|number>,
-   *   valueType: "string"|"binary",
-   *   limit: number,
-   * }) -> entries AsyncGenerator<[key string, value string|Buffer]>
-   *
    * options {
    *   exclusiveStartKey: string,
    *   startingSortValue: string|number|Array<string|number>,
