@@ -120,7 +120,7 @@ async function databaseHandler(request, response) {
       const value = request.headers["content-type"] == "text/plain"
         ? await Readable.Text(request)
         : await Readable.Buffer(request)
-      if (sortValue == null) {
+      if (sortValue == "undefined") {
         await ht.set(key, value)
       } else {
         if (Array.isArray(sortValue)) {
