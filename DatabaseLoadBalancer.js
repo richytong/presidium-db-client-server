@@ -19,7 +19,7 @@ const errorHandler = require("./errorHandler")
  * HTTP.Handler(HTTP.Request, HTTP.Response) -> ()
  *
  * new DatabaseLoadBalancer(
- *   hash(tableName string, key string, length number) -> Promise|number,
+ *   hash(tableName string, key string, serverIpslength number) -> Promise|number,
  *   options {
  *     serverIps: Array<string>|Array<Array<string>>,
  *   },
