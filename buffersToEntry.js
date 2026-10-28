@@ -9,10 +9,6 @@ function _convertPrimitive(value, t) {
   return value
 }
 
-function toString(value, encoding) {
-  return value.toString(encoding)
-}
-
 /**
  * @name buffersToEntry
  *

@@ -216,7 +216,7 @@ async function test2() {
 
   server3.listen(7363)
 
-  const loadBalancer = new DatabaseLoadBalancer(() => 0, {
+  const loadBalancer = new DatabaseLoadBalancer({
     serverIps: [[
       "localhost:7361",
       "localhost:7362",
@@ -281,7 +281,7 @@ async function test3() {
 
   server3.listen(7366)
 
-  const loadBalancer = new DatabaseLoadBalancer(() => 0, {
+  const loadBalancer = new DatabaseLoadBalancer({
     serverIps: [[
       "localhost:7364",
       "localhost:7365",

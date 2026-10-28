@@ -1,5 +1,4 @@
 const package = require("./package.json")
-const walk = require("./walk")
 
 const tests = [
   require("./AsyncIterator.test.js"),
