@@ -38,9 +38,7 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
-   *
-   * clear DiskSortedHashTable.clear
+   * clear() -> Promise<>
    * ```
    */
   async clear() {
