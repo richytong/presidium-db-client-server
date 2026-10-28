@@ -27,6 +27,7 @@
     "healthCheckHandler.js",
     "notFoundHandler.js",
     "errorHandler.js",
+    "hash.js",
     "parseString.js",
     "toString.js"
   ],
