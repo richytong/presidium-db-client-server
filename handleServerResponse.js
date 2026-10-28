@@ -33,7 +33,7 @@ async function handleServerResponse(response, options = {}) {
     binaryStream,
     textEntriesStream,
     binaryEntriesStream,
-    delimiter = "",
+    delimiter,
     entryLength,
   } = options
 

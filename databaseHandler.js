@@ -3,9 +3,10 @@
  */
 
 require("rubico/global")
-const DiskHashTable = require("presidium/DiskHashTable")
-const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
+const DiskHashTable = require("presidium-db/DiskHashTable")
+const DiskSortedHashTable = require("presidium-db/DiskSortedHashTable")
 const Readable = require("presidium/Readable")
+const parseString = require("./parseString")
 
 /**
  * @name getHt
@@ -56,14 +57,14 @@ async function getHt(tableName, request) {
       await ht.init()
       hts.set(tableName, ht)
     } else if (request.headers["client-name"] == "DiskSortedHashTableClient") {
-      const config = {
+      const config = pipe({
         storagePath: `${databasePath}/${tableName}/storage`,
         headerPath: `${databasePath}/${tableName}/header`,
         initialLength: defaultTableInitialLength,
         itemSize: defaultTableItemSize,
         sortValueType: request.headers["sort-value-type"],
-        degree: Number(request.headers["degree"]),
-      }
+        degree: request.headers["degree"],
+      }, filter(__), map(unescape), map.call(parseString, this))
       ht = new DiskSortedHashTable(config)
       await manifestHt.set(tableName, JSON.stringify(config))
       await ht.init()
@@ -115,11 +116,19 @@ async function databaseHandler(request, response) {
 
     eq("set"), async () => {
       const key = request.headers["key"]
-      const sortValue = request.headers["sort-value"]
+      const sortValue = parseString.call(this, unescape(request.headers["sort-value"]))
       const value = request.headers["content-type"] == "text/plain"
         ? await Readable.Text(request)
         : await Readable.Buffer(request)
-      await ht.set(key, value, sortValue)
+      if (sortValue == null) {
+        await ht.set(key, value)
+      } else {
+        if (Array.isArray(sortValue)) {
+          await ht.set(key, value, ...sortValue)
+        } else {
+          await ht.set(key, value, sortValue)
+        }
+      }
       response.writeHead(200, {
         "Content-Type": "text/plain",
       })
@@ -178,7 +187,7 @@ async function databaseHandler(request, response) {
       const count = ht.count()
       for await (const value of ht.iterator(options)) {
         response.write(value)
-        response.write("")
+        response.write(this.delimiter)
       }
       response.end()
     },
@@ -193,9 +202,9 @@ async function databaseHandler(request, response) {
       const count = ht.count()
       for await (const [key, value] of ht.entriesIterator(options)) {
         response.write(key)
-        response.write("")
+        response.write(this.delimiter)
         response.write(value)
-        response.write("")
+        response.write(this.delimiter)
       }
       response.end()
     },
@@ -205,12 +214,12 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
-      const options = filter({
+      const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
-      }, __)
+      }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
@@ -219,7 +228,7 @@ async function databaseHandler(request, response) {
       const count = ht.count()
       for await (const value of ht.forwardIterator(options)) {
         response.write(value)
-        response.write("")
+        response.write(this.delimiter)
       }
       response.end()
     },
@@ -229,12 +238,12 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
-      const options = filter({
+      const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
-      }, __)
+      }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
@@ -243,7 +252,7 @@ async function databaseHandler(request, response) {
       const count = ht.count()
       for await (const value of ht.reverseIterator(options)) {
         response.write(value)
-        response.write("")
+        response.write(this.delimiter)
       }
       response.end()
     },
@@ -253,25 +262,27 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
-      const options = filter({
+      const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
-      }, __)
+      }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
         "Content-Encoding": "utf8",
       })
       const count = ht.count()
-      for await (const [key, value, sortValue] of ht.forwardEntriesIterator(options)) {
+      for await (const [key, value, ...sortValue] of ht.forwardEntriesIterator(options)) {
         response.write(key)
-        response.write("")
+        response.write(this.delimiter)
         response.write(value)
-        response.write("")
-        response.write(String(sortValue))
-        response.write("")
+        response.write(this.delimiter)
+        for (const value of sortValue) {
+          response.write(String(value))
+          response.write(this.delimiter)
+        }
       }
       response.end()
     },
@@ -281,25 +292,27 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
-      const options = filter({
+      const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
-      }, __)
+      }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
         "Content-Encoding": "utf8",
       })
       const count = ht.count()
-      for await (const [key, value, sortValue] of ht.reverseEntriesIterator(options)) {
+      for await (const [key, value, ...sortValue] of ht.reverseEntriesIterator(options)) {
         response.write(key)
-        response.write("")
+        response.write(this.delimiter)
         response.write(value)
-        response.write("")
-        response.write(String(sortValue))
-        response.write("")
+        response.write(this.delimiter)
+        for (const value of sortValue) {
+          response.write(String(value))
+          response.write(this.delimiter)
+        }
       }
       response.end()
     },

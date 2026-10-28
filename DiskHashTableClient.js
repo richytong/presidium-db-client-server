@@ -33,9 +33,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskHashTable "https://presidium.services/docs/DiskHashTable"
-   *
-   * clear DiskHashTable.clear
+   * clear() -> Promise<>
    * ```
    */
   async clear() {
@@ -53,9 +51,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskHashTable "https://presidium.services/docs/DiskHashTable"
-   *
-   * set DiskHashTable.set
+   * set(key string, value string|Buffer|Uint8Array) -> Promise<>
    * ```
    */
   async set(key, value) {
@@ -77,9 +73,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskHashTable "https://presidium.services/docs/DiskHashTable"
-   *
-   * get DiskHashTable.get
+   * get(key string) -> value Promise<string|undefined>
    * ```
    */
   async get(key) {
@@ -101,9 +95,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskHashTable "https://presidium.services/docs/DiskHashTable"
-   *
-   * getBinary DiskHashTable.getBinary
+   * getBinary(key string) -> binaryValue Promise<Buffer|undefined>
    * ```
    */
   async getBinary(key) {
@@ -122,9 +114,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskHashTable "https://presidium.services/docs/DiskHashTable"
-   *
-   * delete DiskHashTable.delete
+   * delete(key string) -> didDelete Promise<boolean>
    * ```
    */
   async delete(key) {
@@ -163,12 +153,14 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
+   * iterator() -> values AsyncGenerator<string>
+   *
    * iterator(options {
    *   valueType: "string"|"binary",
-   * }) -> values AsyncIterator<string|Buffer>
+   * }) -> values AsyncGenerator<string|Buffer>
    * ```
    */
-  async iterator(options = {}) {
+  async * iterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/iterator`, {
       headers: {
@@ -178,15 +170,16 @@ class DiskHashTableClient {
       },
     })
     if (valueType == "binary") {
-      return handleServerResponse(response, {
+      yield * await handleServerResponse(response, {
         binaryStream: true,
         delimiter: this.delimiter,
       })
+    } else {
+      yield * await handleServerResponse(response, {
+        textStream: true,
+        delimiter: this.delimiter,
+      })
     }
-    return handleServerResponse(response, {
-      textStream: true,
-      delimiter: this.delimiter,
-    })
   }
 
   /**
@@ -194,12 +187,14 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
+   * entriesIterator() -> entries AsyncGenerator<[key string, value string]>
+   *
    * entriesIterator(options {
-   *   valueType: 'string'|'binary',
-   * }) -> entries AsyncIterator<[key string, value string|Buffer]>
+   *   valueType: "string"|"binary",
+   * }) -> entries AsyncGenerator<[key string, value string|Buffer]>
    * ```
    */
-  async entriesIterator(options = {}) {
+  async * entriesIterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/entriesIterator`, {
       headers: {
@@ -215,14 +210,15 @@ class DiskHashTableClient {
         delimiter: this.delimiter,
         entryLength: 2,
       })
-      return map(iter, curry.arity(4, buffersToEntry, __, 2, "utf8", valueType))
+      yield* map(iter, curry.arity(4, buffersToEntry, __, 2, "utf8", valueType))
+    } else {
+      const iter = await handleServerResponse(response, {
+        textEntriesStream: true,
+        delimiter: this.delimiter,
+        entryLength: 2,
+      })
+      yield* map(iter, curry.arity(4, buffersToEntry, __, 2, "utf8", valueType))
     }
-    const iter = await handleServerResponse(response, {
-      textEntriesStream: true,
-      delimiter: this.delimiter,
-      entryLength: 2,
-    })
-    return map(iter, curry.arity(4, buffersToEntry, __, 2, "utf8", valueType))
   }
 }
 

@@ -7,6 +7,7 @@ const HTTP = require("presidium/HTTP")
 const handleServerResponse = require("./handleServerResponse")
 const buffersToEntry = require("./buffersToEntry")
 const parseString = require("./parseString")
+const toString = require("./toString")
 
 /**
  * @name DiskSortedHashTableClient
@@ -16,7 +17,7 @@ const parseString = require("./parseString")
  * new DiskSortedHashTableClient(options {
  *   serverUrl: string,
  *   tableName: string,
- *   sortValueType: "string"|"number",
+ *   sortValueType: "string"|"number"|Array<"string"|"number">,
  *   degree: number,
  *   delimiter: string,
  * }) -> DiskSortedHashTableClient
@@ -48,10 +49,10 @@ class DiskSortedHashTableClient {
         "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
@@ -63,12 +64,12 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
+   * set(key string, value string|Buffer|Uint8Array, sortValue string|number) -> Promise<>
    *
-   * set DiskSortedHashTable.set
+   * set(key string, value string|Buffer|Uint8Array, ...sortValue Array<string|number>) -> Promise<>
    * ```
    */
-  async set(key, value, sortValue) {
+  async set(key, value, ...sortValue) {
     const response = await this.http.POST(`/${this.tableName}/set`, {
       headers: {
         "Content-Type": Buffer.isBuffer(value)
@@ -76,12 +77,12 @@ class DiskSortedHashTableClient {
           : "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
         "Key": key,
-        "Sort-Value": sortValue,
+        "Sort-Value": escape(toString.call(this, sortValue)),
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
       body: value,
@@ -94,9 +95,7 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
-   *
-   * get DiskSortedHashTable.get
+   * get(key string) -> value Promise<string|undefined>
    * ```
    */
   async get(key) {
@@ -106,10 +105,10 @@ class DiskSortedHashTableClient {
         "Client-Name": "DiskSortedHashTableClient",
         "Key": key,
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
@@ -124,9 +123,7 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
-   *
-   * getBinary DiskSortedHashTable.getBinary
+   * getBinary(key string) -> binaryValue Promise<Buffer|undefined>
    * ```
    */
   async getBinary(key) {
@@ -136,10 +133,10 @@ class DiskSortedHashTableClient {
         "Client-Name": "DiskSortedHashTableClient",
         "Key": key,
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
@@ -153,13 +150,14 @@ class DiskSortedHashTableClient {
    * ```specscript
    * forwardIterator(options {
    *   exclusiveStartKey: string, 
-   *   startingSortValue: string|number,
-   *   endingSortValue: string|number,
-   *   valueType: 'string'|'binary',
+   *   startingSortValue: string|number|Array<string|number>,
+   *   endingSortValue: string|number|Array<string|number>,
+   *   valueType: "string"|"binary",
+   *   limit: number,
    * }) -> values AsyncIterator<string|Buffer>
    * ```
    */
-  async forwardIterator(options = {}) {
+  async * forwardIterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/forwardIterator`, {
       headers: {
@@ -171,25 +169,27 @@ class DiskSortedHashTableClient {
           "Starting-Sort-Value": get("startingSortValue"),
           "Ending-Sort-Value": get("endingSortValue"),
           "Value-Type": get("valueType"),
-        }), filter(__), map(parseString)),
+          "Limit": get("limit"),
+        }), filter(__), map.call(toString, this), map(escape)),
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
     if (valueType == "binary") {
-      return handleServerResponse(response, {
+      yield* await handleServerResponse(response, {
         binaryStream: true,
         delimiter: this.delimiter,
       })
+    } else {
+      yield* await handleServerResponse(response, {
+        textStream: true,
+        delimiter: this.delimiter,
+      })
     }
-    return handleServerResponse(response, {
-      textStream: true,
-      delimiter: this.delimiter,
-    })
   }
 
   /**
@@ -199,13 +199,14 @@ class DiskSortedHashTableClient {
    * ```specscript
    * reverseIterator(options {
    *   exclusiveStartKey: string, 
-   *   startingSortValue: string|number,
-   *   endingSortValue: string|number,
-   *   valueType: 'string'|'binary',
+   *   startingSortValue: string|number|Array<string|number>,
+   *   endingSortValue: string|number|Array<string|number>,
+   *   valueType: "string"|"binary",
+   *   limit: number,
    * }) -> values AsyncIterator<string|Buffer>
    * ```
    */
-  async reverseIterator(options = {}) {
+  async * reverseIterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/reverseIterator`, {
       headers: {
@@ -217,25 +218,27 @@ class DiskSortedHashTableClient {
           "Starting-Sort-Value": get("startingSortValue"),
           "Ending-Sort-Value": get("endingSortValue"),
           "Value-Type": get("valueType"),
-        }), filter(__), map(parseString)),
+          "Limit": get("limit"),
+        }), filter(__), map.call(toString, this), map(escape)),
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
     if (valueType == "binary") {
-      return handleServerResponse(response, {
+      yield* await handleServerResponse(response, {
         binaryStream: true,
         delimiter: this.delimiter,
       })
+    } else {
+      yield* await handleServerResponse(response, {
+        textStream: true,
+        delimiter: this.delimiter,
+      })
     }
-    return handleServerResponse(response, {
-      textStream: true,
-      delimiter: this.delimiter,
-    })
   }
 
   /**
@@ -245,13 +248,46 @@ class DiskSortedHashTableClient {
    * ```specscript
    * forwardEntriesIterator(options {
    *   exclusiveStartKey: string, 
-   *   startingSortValue: string|number,
-   *   endingSortValue: string|number,
-   *   valueType: 'string'|'binary',
-   * }) -> values AsyncIterator<string|Buffer>
+   *   startingSortValue: string|number|Array<string|number>,
+   *   endingSortValue: string|number|Array<string|number>,
+   *   valueType: "string"|"binary",
+   *   limit: number,
+   * }) -> entries AsyncGenerator<[key string, value string|Buffer]>
+   *
+   * options {
+   *   exclusiveStartKey: string,
+   *   startingSortValue: string|number|Array<string|number>,
+   *   endingSortValue: string|number|Array<string|number>,
+   *   valueType: "string"|"binary",
+   *   limit: number,
+   * }
+   *
+   * forwardEntriesIterator() -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   sortValue string|number,
+   * ]>
+   *
+   * forwardEntriesIterator() -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   ...sortValue Array<string|number>,
+   * ]>
+   *
+   * forwardEntriesIterator(options) -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   sortValue string|number,
+   * ]>
+   *
+   * forwardEntriesIterator(options) -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   ...sortValue Array<string|number>,
+   * ]>
    * ```
    */
-  async forwardEntriesIterator(options = {}) {
+  async * forwardEntriesIterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/forwardEntriesIterator`, {
       headers: {
@@ -263,29 +299,37 @@ class DiskSortedHashTableClient {
           "Starting-Sort-Value": get("startingSortValue"),
           "Ending-Sort-Value": get("endingSortValue"),
           "Value-Type": get("valueType"),
-        }), filter(__), map(parseString)),
+          "Limit": get("limit"),
+        }), filter(__), map.call(toString, this), map(escape)),
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
+
+    const entryLength =
+      Array.isArray(this.sortValueType)
+      ? 2 + this.sortValueType.length
+      : 3
+
     if (valueType == "binary") {
       const iter = await handleServerResponse(response, {
         binaryEntriesStream: true,
         delimiter: this.delimiter,
-        entryLength: 3,
+        entryLength,
       })
-      return map(iter, curry(buffersToEntry, __, 3, "utf8", valueType, this.sortValueType))
+      yield* map(iter, curry(buffersToEntry, __, entryLength, "utf8", valueType, this.sortValueType))
+    } else {
+      const iter = await handleServerResponse(response, {
+        textEntriesStream: true,
+        delimiter: this.delimiter,
+        entryLength,
+      })
+      yield* map(iter, curry(buffersToEntry, __, entryLength, "utf8", valueType, this.sortValueType))
     }
-    const iter = await handleServerResponse(response, {
-      textEntriesStream: true,
-      delimiter: this.delimiter,
-      entryLength: 3,
-    })
-    return map(iter, curry(buffersToEntry, __, 3, "utf8", valueType, this.sortValueType))
   }
 
   /**
@@ -293,12 +337,40 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
+   * options {
+   *   exclusiveStartKey: string,
+   *   startingSortValue: string|number|Array<string|number>,
+   *   endingSortValue: string|number|Array<string|number>,
+   *   valueType: "string"|"binary",
+   *   limit: number,
+   * }
    *
-   * reverseEntriesIterator DiskSortedHashTable.reverseEntriesIterator
+   * reverseEntriesIterator() -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   sortValue string|number,
+   * ]>
+   *
+   * reverseEntriesIterator() -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   ...sortValue Array<string|number>,
+   * ]>
+   *
+   * reverseEntriesIterator(options) -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   sortValue string|number,
+   * ]>
+   *
+   * reverseEntriesIterator(options) -> entries AsyncGenerator<[
+   *   key string,
+   *   value string|Buffer,
+   *   ...sortValue Array<string|number>,
+   * ]>
    * ```
    */
-  async reverseEntriesIterator(options = {}) {
+  async * reverseEntriesIterator(options = {}) {
     const { valueType } = options
     const response = await this.http.POST(`/${this.tableName}/reverseEntriesIterator`, {
       headers: {
@@ -310,30 +382,37 @@ class DiskSortedHashTableClient {
           "Starting-Sort-Value": get("startingSortValue"),
           "Ending-Sort-Value": get("endingSortValue"),
           "Value-Type": get("valueType"),
-        }), filter(__), map(parseString)),
+          "Limit": get("limit"),
+        }), filter(__), map.call(toString, this), map(escape)),
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
+
+    const entryLength =
+      Array.isArray(this.sortValueType)
+      ? 2 + this.sortValueType.length
+      : 3
 
     if (valueType == "binary") {
       const iter = await handleServerResponse(response, {
         binaryEntriesStream: true,
         delimiter: this.delimiter,
-        entryLength: 3,
+        entryLength,
       })
-      return map(iter, curry(buffersToEntry, __, 3, "utf8", valueType, this.sortValueType))
+      yield* map(iter, curry(buffersToEntry, __, entryLength, "utf8", valueType, this.sortValueType))
+    } else {
+      const iter = await handleServerResponse(response, {
+        textEntriesStream: true,
+        delimiter: this.delimiter,
+        entryLength,
+      })
+      yield* map(iter, curry(buffersToEntry, __, entryLength, "utf8", valueType, this.sortValueType))
     }
-    const iter = await handleServerResponse(response, {
-      textEntriesStream: true,
-      delimiter: this.delimiter,
-      entryLength: 3,
-    })
-    return map(iter, curry(buffersToEntry, __, 3, "utf8", valueType, this.sortValueType))
   }
 
   /**
@@ -341,9 +420,7 @@ class DiskSortedHashTableClient {
    *
    * @docs
    * ```specscript
-   * module DiskSortedHashTable "https://presidium.services/docs/DiskSortedHashTable"
-   *
-   * delete DiskSortedHashTable.delete
+   * delete(key string) -> didDelete Promise<boolean>
    * ```
    */
   async delete(key) {
@@ -353,10 +430,10 @@ class DiskSortedHashTableClient {
         "Client-Name": "DiskSortedHashTableClient",
         "Key": key,
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })
@@ -378,10 +455,10 @@ class DiskSortedHashTableClient {
         "Content-Type": "text/plain",
         "Client-Name": "DiskSortedHashTableClient",
 
-        ...pipe(this, all({
-          "Sort-Value-Type": get("sortValueType"),
-          "Degree": get("degree"),
-        }), filter(__), map(parseString)),
+        ...pipe({
+          "Sort-Value-Type": this.sortValueType,
+          "Degree": this.degree,
+        }, filter(__), map.call(toString, this), map(escape))
 
       },
     })

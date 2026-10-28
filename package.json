@@ -27,7 +27,8 @@
     "healthCheckHandler.js",
     "notFoundHandler.js",
     "errorHandler.js",
-    "parseString.js"
+    "parseString.js",
+    "toString.js"
   ],
   "keywords": [
     "presidium",
@@ -44,8 +45,9 @@
     "test": "node test.js"
   },
   "dependencies": {
+    "presidium-db": ">=4.7.0",
     "presidium": ">=4.9.1",
-    "rubico": "^2.21.0"
+    "rubico": ">=2.22.1"
   },
   "devDependencies": {
     "codecov": "^3.8.2"

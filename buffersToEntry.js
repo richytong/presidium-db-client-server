@@ -2,6 +2,17 @@
  * Presidium DB Client and Server may be freely distributed under the CFOSS license.
  */
 
+function _convertPrimitive(value, t) {
+  if (t == "number") {
+    return Number(value)
+  }
+  return value
+}
+
+function toString(value, encoding) {
+  return value.toString(encoding)
+}
+
 /**
  * @name buffersToEntry
  *
@@ -24,15 +35,16 @@
  * ```
  */
 function buffersToEntry(buffers, entryLength, encoding, valueType, sortValueType) {
-  if (entryLength == 3) {
+  if (entryLength > 2) {
     const key = buffers[0].toString(encoding)
     const value = valueType == "string"
       ? buffers[1].toString(encoding)
       : buffers[1]
-    const sortValue = sortValueType == "number"
-      ? Number(buffers[2].toString(encoding))
-      : buffers[2].toString(encoding)
-    return [key, value, sortValue]
+    const sortValue = buffers.slice(2)
+    for (let i = 0; i < sortValue.length; i++) {
+      sortValue[i] = _convertPrimitive(sortValue[i].toString(encoding), sortValueType[i])
+    }
+    return [key, value, ...sortValue]
   }
   const key = buffers[0].toString(encoding)
   const value = valueType == "string"

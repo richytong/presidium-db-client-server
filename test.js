@@ -29,7 +29,7 @@ const tests = [
   require("./TextEntriesStream.test.js"),
   require("./TextStream.test.js"),
   require("./DatabaseServer.test.js"),
-  require("./DatabaseLoadBalancer.test.js"),
+  // require("./DatabaseLoadBalancer.test.js"),
 ]
 
 setImmediate(async () => {

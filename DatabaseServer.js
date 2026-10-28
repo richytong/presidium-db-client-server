@@ -4,8 +4,8 @@
 
 require("rubico/global")
 const HTTP = require("presidium/HTTP")
-const DiskHashTable = require("presidium/DiskHashTable")
-const DiskSortedHashTable = require("presidium/DiskSortedHashTable")
+const DiskHashTable = require("presidium-db/DiskHashTable")
+const DiskSortedHashTable = require("presidium-db/DiskSortedHashTable")
 const databaseHandler = require("./databaseHandler")
 const healthCheckHandler = require("./healthCheckHandler")
 const notFoundHandler = require("./notFoundHandler")
@@ -28,6 +28,7 @@ const errorHandler = require("./errorHandler")
  *   defaultTableInitialLength: number,
  *   defaultTableItemSize: number,
  *   defaultDiskSortedHashTableDegree: number,
+ *   delimiter: string,
  * }, ...handlers Arguments<HTTP.Handler>) -> server DatabaseServer
  * ```
  */
@@ -40,6 +41,7 @@ class DatabaseServer {
     this.defaultTableInitialLength = options.defaultTableInitialLength ?? 1048576
     this.defaultTableItemSize = options.defaultTableItemSize ?? 1024
     this.defaultDiskSortedHashTableDegree = options.defaultDiskSortedHashTableDegree ?? 2
+    this.delimiter = options.delimiter ?? ""
     this.handlers = handlers
     this.server = null
     this.hts = new Map()
