@@ -24,7 +24,7 @@ const errorHandler = require("./errorHandler")
  *     serverIps: Array<string>|Array<Array<string>>,
  *   },
  *   ...handlers Arguments<HTTP.Handler>
- * )
+ * ) -> DatabaseLoadBalancer
  * ```
  */
 class DatabaseLoadBalancer {
