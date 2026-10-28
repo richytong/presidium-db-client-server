@@ -8,7 +8,7 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 [![codecov](https://codecov.io/gh/richytong/presidium-db-client-server/graph/badge.svg?token=07P6G8GIOQ)](https://codecov.io/gh/richytong/presidium-db-client-server)
 [![npm version](https://img.shields.io/npm/v/presidium-db-client-server.svg?style=flat)](https://www.npmjs.com/package/presidium-db-client-server)
 
-Presidium DB Client and Server.
+Presidium DB client and server.
 
 ## Host your own distributed database
 ```javascript
