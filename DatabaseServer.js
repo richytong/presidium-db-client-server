@@ -16,9 +16,9 @@ const errorHandler = require("./errorHandler")
  *
  * @docs
  * ```specscript
- * module HTTP "https://presidium.services/docs/HTTP"
+ * module http "https://nodejs.org/api/http.html"
  *
- * HTTP.Handler(request HTTP.Request, response HTTP.Response) -> ()
+ * type HttpHandler(http.ClientRequest, http.ServerResponse) -> Promise<>|undefined
  *
  * new DatabaseServer(options {
  *   databasePath: string,
@@ -29,7 +29,7 @@ const errorHandler = require("./errorHandler")
  *   defaultTableItemSize: number,
  *   defaultDiskSortedHashTableDegree: number,
  *   delimiter: string,
- * }, ...handlers Arguments<HTTP.Handler>) -> server DatabaseServer
+ * }, ...handlers Arguments<HttpHandler>) -> server DatabaseServer
  * ```
  */
 class DatabaseServer {
