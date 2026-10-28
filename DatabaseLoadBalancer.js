@@ -15,17 +15,23 @@ const defaultHash = require("./hash")
  *
  * @docs
  * ```specscript
- * module HTTP "https://presidium.services/docs/HTTP"
+ * module http "https://nodejs.org/api/http.html"
  *
- * HTTP.Handler(HTTP.Request, HTTP.Response) -> ()
+ * type HttpHandler(http.ClientRequest, http.ServerResponse) -> Promise<>|undefined
  *
- * new DatabaseLoadBalancer(
- *   hash(tableName string, key string, serverIpslength number) -> Promise|number,
- *   options {
- *     serverIps: Array<string>|Array<Array<string>>,
- *   },
- *   ...handlers Arguments<HTTP.Handler>
- * ) -> DatabaseLoadBalancer
+ * new DatabaseLoadBalancer(options {
+ *   serverIps: Array<string>|Array<Array<string>>,
+ * }, ...handlers Arguments<HttpHandler>) -> DatabaseLoadBalancer
+ *
+ * hash(
+ *   tableName string,
+ *   key string,
+ *   serverIpslength number
+ * ) -> serverIndex Promise|number
+ *
+ * new DatabaseLoadBalancer(hash, options {
+ *   serverIps: Array<string>|Array<Array<string>>,
+ * }, ...handlers Arguments<HttpHandler>) -> DatabaseLoadBalancer
  * ```
  */
 class DatabaseLoadBalancer {
