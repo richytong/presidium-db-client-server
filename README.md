@@ -121,9 +121,6 @@ loadBalancer.listen(6333, () => {
 })
 ```
 
-## Docs
-Coming soon.
-
 ## Installation
 
 with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
