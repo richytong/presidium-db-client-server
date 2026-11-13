@@ -157,7 +157,7 @@ class DatabaseServer {
    *   headerPath: string,
    *   initialLength: number,
    *   itemSize: number,
-   *   sortValueType: "number"|"string",
+   *   sortValueType: "string"|"number"|Array<"string"|"number">,
    *   degree: number,
    *   resizeRatio: number,
    *   resizeFactor: number,
