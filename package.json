@@ -46,7 +46,7 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "presidium-db": ">=4.7.0",
+    "presidium-db": ">=4.7.2",
     "presidium": ">=4.9.1",
     "rubico": ">=2.22.1"
   },
