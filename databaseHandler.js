@@ -319,7 +319,7 @@ async function databaseHandler(request, response) {
 
     async () => {
       const error = new Error("Forbidden: Hash Table Method")
-      error.code = "403"
+      error.code = 403
       throw error
     },
   )
