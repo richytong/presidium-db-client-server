@@ -2,14 +2,20 @@
  * @name errorHandler
  *
  * @docs
- * ```specscript
- * module HTTP "https://presidium.services/docs/HTTP"
- *
- * errorHandler(error Error, request HTTP.Request, response HTTP.Response) -> ()
+ * ```coffeescript [specscript]
+ * errorHandler(
+ *   error Error,
+ *   request http.ClientRequest,
+ *   response http.ServerResponse
+ * ) -> undefined
  * ```
  */
 function errorHandler(error, request, response) {
-  response.writeHead(error.code ?? 500, {
+  if (typeof error.code != "number") {
+    error.code = 500
+  }
+  response.writeHead(error.code, {
+    "Access-Control-Allow-Origin": "*",
     "Content-Type": "text/plain",
   })
   response.end(error.message)
