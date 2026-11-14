@@ -130,4 +130,4 @@ npm i presidium-db-client-server
 Presidium DB Client and Server is distributed under the [CFOSS License](https://cloutsworld.com/en-us/legal/license/cfoss).
 
 ## Support
- * minimum Node.js version: 20
+ * minimum Node.js version: 16
