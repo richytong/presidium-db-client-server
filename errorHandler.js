@@ -11,6 +11,7 @@
  * ```
  */
 function errorHandler(error, request, response) {
+  console.error(error)
   if (typeof error.code != "number") {
     error.code = 500
   }
