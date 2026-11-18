@@ -261,6 +261,13 @@ async function test1() {
   assert.equal(array1[1], "2")
   assert.equal(array1[2], "3")
 
+  const array01 = []
+  for await (const value of ht1.forwardIterator({ limit: 1 })) {
+    array01.push(value)
+  }
+  assert.equal(array01.length, 1)
+  assert.equal(array01[0], "1")
+
   const array2 = []
   for await (const value of ht1.forwardIterator({ valueType: "string" })) {
     array2.push(value)
@@ -303,6 +310,13 @@ async function test1() {
   assert.equal(array6[0], "3")
   assert.equal(array6[1], "2")
   assert.equal(array6[2], "1")
+
+  const array06 = []
+  for await (const value of ht1.reverseIterator({ limit: 1 })) {
+    array06.push(value)
+  }
+  assert.equal(array06.length, 1)
+  assert.equal(array06[0], "3")
 
   const array7 = []
   for await (const value of ht1.reverseIterator({ valueType: "string" })) {
@@ -352,6 +366,15 @@ async function test1() {
   assert.equal(array11[2][0], "c")
   assert.equal(array11[2][1], "3")
   assert.equal(array11[2][2], 3)
+
+  const array011 = []
+  for await (const value of ht1.forwardEntriesIterator({ limit: 1 })) {
+    array011.push(value)
+  }
+  assert.equal(array011.length, 1)
+  assert.equal(array011[0][0], "a")
+  assert.equal(array011[0][1], "1")
+  assert.equal(array011[0][2], 1)
 
   const array12 = []
   for await (const value of ht1.forwardEntriesIterator({ valueType: "string" })) {
@@ -421,6 +444,15 @@ async function test1() {
   assert.equal(array16[2][0], "a")
   assert.equal(array16[2][1], "1")
   assert.equal(array16[2][2], 1)
+
+  const array016 = []
+  for await (const value of ht1.reverseEntriesIterator({ limit: 1 })) {
+    array016.push(value)
+  }
+  assert.equal(array016.length, 1)
+  assert.equal(array016[0][0], "c")
+  assert.equal(array016[0][1], "3")
+  assert.equal(array016[0][2], 3)
 
   const array17 = []
   for await (const value of ht1.reverseEntriesIterator({ valueType: "string" })) {
@@ -859,6 +891,13 @@ async function test4() {
   assert.equal(array6[0], "3")
   assert.equal(array6[1], "2")
   assert.equal(array6[2], "1")
+
+  const array06 = []
+  for await (const value of ht1.reverseIterator({ limit: 1 })) {
+    array06.push(value)
+  }
+  assert.equal(array06.length, 1)
+  assert.equal(array06[0], "3")
 
   const array7 = []
   for await (const value of ht1.reverseIterator({ valueType: "string" })) {

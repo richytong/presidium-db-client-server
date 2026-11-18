@@ -179,7 +179,8 @@ async function databaseHandler(request, response) {
 
     eq("iterator"), async () => {
       const valueType = request.headers["value-type"]
-      const options = filter({ valueType }, __)
+      const limit = request.headers["limit"]
+      const options = filter({ valueType, limit }, __)
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
         "Content-Encoding": "utf8",
@@ -194,7 +195,8 @@ async function databaseHandler(request, response) {
 
     eq("entriesIterator"), async () => {
       const valueType = request.headers["value-type"]
-      const options = filter({ valueType }, __)
+      const limit = request.headers["limit"]
+      const options = filter({ valueType, limit }, __)
       response.writeHead(200, {
         "Content-Type": "application/octet-stream",
         "Content-Encoding": "utf8",
@@ -214,11 +216,13 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
+      const limit = request.headers["limit"]
       const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
+        limit,
       }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
@@ -238,11 +242,13 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
+      const limit = request.headers["limit"]
       const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
+        limit,
       }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
@@ -262,11 +268,13 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
+      const limit = request.headers["limit"]
       const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
+        limit,
       }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
@@ -292,11 +300,13 @@ async function databaseHandler(request, response) {
       const exclusiveStartKey = request.headers["exclusive-start-key"]
       const startingSortValue = request.headers["starting-sort-value"]
       const endingSortValue = request.headers["ending-sort-value"]
+      const limit = request.headers["limit"]
       const options = pipe({
         valueType,
         exclusiveStartKey,
         startingSortValue,
         endingSortValue,
+        limit,
       }, filter(__), map(unescape), map.call(parseString, this))
 
       response.writeHead(200, {
