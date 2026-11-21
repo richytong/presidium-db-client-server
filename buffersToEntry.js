@@ -26,7 +26,7 @@ function _convertPrimitive(value, t) {
  *   entryLength number,
  *   encoding string,
  *   valueType string,
- *   sortValueType string
+ *   sortValueType "string"|"number"|Array<"string"|"number">
  * ) -> Array<string, Buffer>
  * ```
  */
