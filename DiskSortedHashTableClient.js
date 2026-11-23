@@ -8,6 +8,7 @@ const handleServerResponse = require("./handleServerResponse")
 const buffersToEntry = require("./buffersToEntry")
 const parseString = require("./parseString")
 const toString = require("./toString")
+const exists = require("./exists")
 
 /**
  * @name DiskSortedHashTableClient
@@ -17,9 +18,13 @@ const toString = require("./toString")
  * new DiskSortedHashTableClient(options {
  *   serverUrl: string,
  *   tableName: string,
+ *   initialLength: number,
+ *   itemSize: number,
  *   sortValueType: "string"|"number"|Array<"string"|"number">,
  *   degree: number,
  *   delimiter: string,
+ *   resizeRatio: number,
+ *   resizeFactor: number,
  * }) -> DiskSortedHashTableClient
  * ```
  */
@@ -27,10 +32,42 @@ class DiskSortedHashTableClient {
   constructor(options) {
     this.serverUrl = options.serverUrl
     this.tableName = options.tableName
+    this.initialLength = options.initialLength
+    this.itemSize = options.itemSize
     this.sortValueType = options.sortValueType
-    this.degree = options.degree
+    this.degree = options.degree ?? 2
     this.delimiter = options.delimiter ?? ""
+    this.resizeRatio = options.resizeRatio ?? 0
+    this.resizeFactor = options.resizeFactor ?? 4
     this.http = new HTTP(this.serverUrl)
+  }
+
+  /**
+   * @name register
+   *
+   * @docs
+   * ```specscript
+   * register() -> Promise<>
+   * ```
+   */
+  async register() {
+    const config = filter({
+      initialLength: this.initialLength,
+      itemSize: this.itemSize,
+      sortValueType: this.sortValueType,
+      degree: this.degree,
+      resizeRatio: this.resizeRatio,
+      resizeFactor: this.resizeFactor,
+    }, exists)
+
+    const response = await this.http.POST(`/${this.tableName}/register`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Name": "DiskSortedHashTableClient",
+      },
+      body: JSON.stringify(config),
+    })
+    await handleServerResponse(response)
   }
 
   /**

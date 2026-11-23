@@ -119,7 +119,7 @@ class DatabaseServer {
    */
   close() {
     this.manifestHt.close()
-    for (const ht of this.hts.values()) {
+    for (const [tableName, ht] of this.hts) {
       ht.close()
     }
     this.server.close()
@@ -131,8 +131,6 @@ class DatabaseServer {
    * @docs
    * ```specscript
    * registerDiskHashTable(tableName string, config {
-   *   storagePath: string,
-   *   headerPath: string,
    *   initialLength: number,
    *   itemSize: number,
    *   resizeRatio: number,
@@ -141,9 +139,19 @@ class DatabaseServer {
    * ```
    */
   async registerDiskHashTable(tableName, config) {
-    const ht = new DiskHashTable(config)
+    const tableOptions = filter({
+      storagePath: `${this.databasePath}/${tableName}/storage`,
+      headerPath: `${this.databasePath}/${tableName}/header`,
+      initialLength: config.initialLength,
+      itemSize: config.itemSize,
+      resizeRatio: config.resizeRatio,
+      resizeFactor: config.resizeFactor,
+    }, __)
+
+    const ht = new DiskHashTable(tableOptions)
     await ht.init()
-    await this.manifestHt.set(tableName, JSON.stringify(config))
+
+    await this.manifestHt.set(tableName, JSON.stringify(tableOptions))
     this.hts.set(tableName, ht)
   }
 
@@ -153,8 +161,6 @@ class DatabaseServer {
    * @docs
    * ```specscript
    * registerDiskSortedHashTable(tableName string, config {
-   *   storagePath: string,
-   *   headerPath: string,
    *   initialLength: number,
    *   itemSize: number,
    *   sortValueType: "string"|"number"|Array<"string"|"number">,
@@ -165,9 +171,21 @@ class DatabaseServer {
    * ```
    */
   async registerDiskSortedHashTable(tableName, config) {
-    const ht = new DiskSortedHashTable(config)
+    const tableOptions = filter({
+      storagePath: `${this.databasePath}/${tableName}/storage`,
+      headerPath: `${this.databasePath}/${tableName}/header`,
+      initialLength: config.initialLength,
+      itemSize: config.itemSize,
+      sortValueType: config.sortValueType,
+      degree: config.degree,
+      resizeRatio: config.resizeRatio,
+      resizeFactor: config.resizeFactor,
+    }, __)
+
+    const ht = new DiskSortedHashTable(tableOptions)
     await ht.init()
-    await this.manifestHt.set(tableName, JSON.stringify(config))
+
+    await this.manifestHt.set(tableName, JSON.stringify(tableOptions))
     this.hts.set(tableName, ht)
   }
 }

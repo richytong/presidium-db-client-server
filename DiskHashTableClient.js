@@ -7,6 +7,7 @@ const HTTP = require("presidium/HTTP")
 const Readable = require("presidium/Readable")
 const handleServerResponse = require("./handleServerResponse")
 const buffersToEntry = require("./buffersToEntry")
+const exists = require("./exists")
 
 /**
  * @name DiskHashTableClient
@@ -16,7 +17,11 @@ const buffersToEntry = require("./buffersToEntry")
  * new DiskHashTableClient(options {
  *   serverUrl: string,
  *   tableName: string,
+ *   initialLength: number,
+ *   itemSize: number,
  *   delimiter: string,
+ *   resizeRatio: number,
+ *   resizeFactor: number,
  * }) -> DiskHashTableClient
  * ```
  */
@@ -24,8 +29,38 @@ class DiskHashTableClient {
   constructor(options) {
     this.serverUrl = options.serverUrl
     this.tableName = options.tableName
+    this.initialLength = options.initialLength
+    this.itemSize = options.itemSize
     this.delimiter = options.delimiter ?? ""
+    this.resizeRatio = options.resizeRatio ?? 0
+    this.resizeFactor = options.resizeFactor ?? 4
     this.http = new HTTP(this.serverUrl)
+  }
+
+  /**
+   * @name register
+   *
+   * @docs
+   * ```specscript
+   * register() -> Promise<>
+   * ```
+   */
+  async register() {
+    const config = filter({
+      initialLength: this.initialLength,
+      itemSize: this.itemSize,
+      resizeRatio: this.resizeRatio,
+      resizeFactor: this.resizeFactor,
+    }, exists)
+
+    const response = await this.http.POST(`/${this.tableName}/register`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Name": "DiskHashTableClient",
+      },
+      body: JSON.stringify(config),
+    })
+    await handleServerResponse(response)
   }
 
   /**

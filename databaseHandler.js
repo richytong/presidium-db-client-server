@@ -106,6 +106,24 @@ async function databaseHandler(request, response) {
   await switchCase(
     fname,
 
+    eq("register"), async () => {
+      const clientName = request.headers["client-name"]
+      const config = await Readable.JSON(request)
+      if (clientName == "DiskHashTableClient") {
+        await this.registerDiskHashTable(tableName, config)
+      } else if (clientName == "DiskSortedHashTableClient") {
+        await this.registerDiskSortedHashTable(tableName, config)
+      } else {
+        const error = new Error("Forbidden: Client-Name")
+        error.code = 403
+        throw error
+      }
+      response.writeHead(200, {
+        "Content-Type": "text/plain",
+      })
+      response.end("OK")
+    },
+
     eq("clear"), async () => {
       await ht.clear()
       response.writeHead(200, {

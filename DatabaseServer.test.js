@@ -23,10 +23,7 @@ async function test0() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7357, resolve1)
-  await promise1
+  server1.listen(7357)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7357",
@@ -164,10 +161,7 @@ async function test0() {
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7358, resolve2)
-  await promise2
+  server2.listen(7358)
 
   const ht2 = new DiskHashTableClient({
     serverUrl: "http://localhost:7358",
@@ -197,10 +191,7 @@ async function test1() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7359, resolve1)
-  await promise1
+  server1.listen(7359)
 
   const ht1 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7359",
@@ -543,10 +534,7 @@ async function test1() {
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7360, resolve2)
-  await promise2
+  server2.listen(7360)
 
   const ht2 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7360",
@@ -576,42 +564,39 @@ async function test2() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7361, resolve1)
-  await promise1
+  server1.listen(7361)
 
-  await server1.registerDiskHashTable("Registered_HashTable1", {
-    storagePath: `${__dirname}/database/Registered_HashTable1/storage`,
-    headerPath: `${__dirname}/database/Registered_HashTable1/header`,
+  await server1.registerDiskHashTable("Server_Registered_HashTable1", {
+    storagePath: `${__dirname}/database/Server_Registered_HashTable1/storage`,
+    headerPath: `${__dirname}/database/Server_Registered_HashTable1/header`,
     initialLength: 1024,
     itemSize: 128,
   })
-  assert(server1.hts.has("Registered_HashTable1"))
+  assert(server1.hts.has("Server_Registered_HashTable1"))
 
-  const config1Json = await server1.manifestHt.get("Registered_HashTable1")
+  const config1Json = await server1.manifestHt.get("Server_Registered_HashTable1")
   const config1 = JSON.parse(config1Json)
 
-  assert.equal(config1.headerPath, `${__dirname}/database/Registered_HashTable1/header`)
-  assert.equal(config1.storagePath, `${__dirname}/database/Registered_HashTable1/storage`)
+  assert.equal(config1.headerPath, `${__dirname}/database/Server_Registered_HashTable1/header`)
+  assert.equal(config1.storagePath, `${__dirname}/database/Server_Registered_HashTable1/storage`)
   assert.equal(config1.initialLength, 1024)
   assert.equal(config1.itemSize, 128)
 
-  await server1.registerDiskSortedHashTable("Registered_HashTable2", {
-    storagePath: `${__dirname}/database/Registered_HashTable2/storage`,
-    headerPath: `${__dirname}/database/Registered_HashTable2/header`,
+  await server1.registerDiskSortedHashTable("Server_Registered_HashTable2", {
+    storagePath: `${__dirname}/database/Server_Registered_HashTable2/storage`,
+    headerPath: `${__dirname}/database/Server_Registered_HashTable2/header`,
     initialLength: 2048,
     itemSize: 256,
     sortValueType: "string",
     degree: 3,
   })
-  assert(server1.hts.has("Registered_HashTable2"))
+  assert(server1.hts.has("Server_Registered_HashTable2"))
 
-  const config2Json = await server1.manifestHt.get("Registered_HashTable2")
+  const config2Json = await server1.manifestHt.get("Server_Registered_HashTable2")
   const config2 = JSON.parse(config2Json)
 
-  assert.equal(config2.headerPath, `${__dirname}/database/Registered_HashTable2/header`)
-  assert.equal(config2.storagePath, `${__dirname}/database/Registered_HashTable2/storage`)
+  assert.equal(config2.headerPath, `${__dirname}/database/Server_Registered_HashTable2/header`)
+  assert.equal(config2.storagePath, `${__dirname}/database/Server_Registered_HashTable2/storage`)
   assert.equal(config2.initialLength, 2048)
   assert.equal(config2.itemSize, 256)
   assert.equal(config2.sortValueType, "string")
@@ -653,10 +638,7 @@ async function test2() {
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7362, resolve2)
-  await promise2
+  server2.listen(7362)
 
   const ht2 = new DiskHashTableClient({
     serverUrl: "http://localhost:7362",
@@ -724,10 +706,7 @@ async function test3() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7363, resolve1)
-  await promise1
+  server1.listen(7363)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7363",
@@ -782,10 +761,7 @@ async function test4() {
   })
   await server1.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server1.listen(7361, resolve1)
-  await promise1
+  server1.listen(7361)
 
   const ht1 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7361",
@@ -1163,10 +1139,7 @@ async function test4() {
   })
   await server2.init()
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  server2.listen(7362, resolve2)
-  await promise2
+  server2.listen(7362)
 
   const ht2 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7362",
@@ -1179,12 +1152,142 @@ async function test4() {
   server2.close()
 }
 
+async function test5() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+    resizeFactor: 4,
+    resizeRatio: 0,
+    delimiter: "",
+  })
+  await server1.init()
+
+  server1.listen(7363)
+
+  const ht1 = new DiskHashTableClient({
+    serverUrl: "http://localhost:7363",
+    tableName: "ClientRegisteredTable1",
+    initialLength: 1024,
+    itemSize: 1024,
+    resizeRatio: 0,
+    resizeFactor: 4,
+    delimiter: "",
+  })
+
+  await ht1.register()
+
+  server1.close()
+}
+
+async function test6() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server1.init()
+
+  server1.listen(7364)
+
+  const ht1 = new DiskSortedHashTableClient({
+    serverUrl: "http://localhost:7364",
+    initialLength: 1024,
+    itemSize: 1024,
+    tableName: "ClientRegisteredTable2",
+    sortValueType: "number",
+    degree: 2,
+    resizeFactor: 4,
+    resizeRatio: 0,
+    delimiter: "",
+  })
+
+  await ht1.register()
+
+  server1.close()
+}
+
+async function test7() {
+  try {
+    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
+  } catch {
+  }
+
+  const server1 = new DatabaseServer({
+    databasePath: `${__dirname}/database`,
+    manifestTableName: "Manifest",
+    manifestTableInitialLength: 1024,
+    manifestTableItemSize: 1024,
+    defaultTableInitialLength: 1024,
+    defaultTableItemSize: 1024,
+    defaultDiskSortedHashTableDegree: 2,
+  })
+  await server1.init()
+
+  server1.listen(7365)
+
+  const ht1 = new DiskSortedHashTableClient({
+    serverUrl: "http://localhost:7365",
+    initialLength: 1024,
+    itemSize: 1024,
+    tableName: "ClientRegisteredTable2",
+    sortValueType: "number",
+    degree: 2,
+    resizeFactor: 4,
+    resizeRatio: 0,
+    delimiter: "",
+  })
+
+  const config = {
+    initialLength: ht1.initialLength,
+    itemSize: ht1.itemSize,
+    sortValueType: ht1.sortValueType,
+    degree: ht1.degree,
+    resizeRatio: ht1.resizeRatio,
+    resizeFactor: ht1.resizeFactor,
+  }
+
+  const response = await ht1.http.POST(`/${ht1.tableName}/register`, {
+    headers: {
+      "Content-Type": "application/json",
+      "Client-Name": "Unknown",
+    },
+    body: JSON.stringify(config),
+  })
+  const message = await Readable.Text(response)
+  assert.equal(message, "Forbidden: Client-Name")
+  assert.equal(response.status, 403)
+
+  server1.close()
+}
+
 async function test() {
   await test0()
   await test1()
   await test2()
   await test3()
   await test4()
+  await test5()
+  await test6()
+  await test7()
   console.log("Success")
 }
 
