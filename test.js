@@ -1,5 +1,4 @@
 const package = require("./package.json")
-const { spawn } = require("child_process")
 
 const tests = [
   require("./AsyncIterator.test.js"),
@@ -15,9 +14,4 @@ setImmediate(async () => {
   for (const test of tests) {
     await test()
   }
-  const cmd = spawn("node", [`${__dirname}/DatabaseServer.test-2.js`]) // gc
-  const exitResult = await new Promise((resolve, reject) => {
-    cmd.on("exit", resolve)
-  })
-  console.log(exitResult)
 })
