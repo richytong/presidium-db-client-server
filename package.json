@@ -28,6 +28,7 @@
     "notFoundHandler.js",
     "errorHandler.js",
     "hash.js",
+    "exists.js",
     "parseString.js",
     "toString.js"
   ],

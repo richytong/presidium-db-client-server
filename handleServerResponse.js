@@ -59,9 +59,6 @@ async function handleServerResponse(response, options = {}) {
     if (response.headers["content-type"] == "application/octet-stream") {
       return Readable.Buffer(response)
     }
-    if (response.headers["content-type"] == "application/json") {
-      return Readable.JSON(response)
-    }
     return Readable.Text(response)
   }
   const message = await Readable.Text(response)

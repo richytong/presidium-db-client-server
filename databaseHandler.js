@@ -113,10 +113,6 @@ async function databaseHandler(request, response) {
         await this.registerDiskHashTable(tableName, config)
       } else if (clientName == "DiskSortedHashTableClient") {
         await this.registerDiskSortedHashTable(tableName, config)
-      } else {
-        const error = new Error("Forbidden: Client-Name")
-        error.code = 403
-        throw error
       }
       response.writeHead(200, {
         "Content-Type": "text/plain",
