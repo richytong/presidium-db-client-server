@@ -1148,11 +1148,11 @@ async function test5() {
 
 async function test() {
   await test0()
-  // await test1()
-  // await test2()
-  // await test3()
-  // await test4()
-  // await test5()
+  await test1()
+  await test2()
+  await test3()
+  await test4()
+  await test5()
   console.log("Success")
 }
 
