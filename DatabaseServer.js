@@ -64,16 +64,6 @@ class DatabaseServer {
     this.server = HTTP.Server(handler)
   }
 
-  /**
-   * @name init
-   *
-   * @docs
-   * ```specscript
-   * init() -> Promise<>
-   * ```
-   *
-   * DEPRECATED
-   */
   async init() {
   }
 
