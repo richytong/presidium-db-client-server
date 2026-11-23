@@ -1186,7 +1186,7 @@ async function test5() {
 
   await ht1.register()
 
-  await server1.server.close()
+  server1.close()
 }
 
 async function test6() {
@@ -1222,7 +1222,7 @@ async function test6() {
 
   await ht1.register()
 
-  await server1.server.close()
+  server1.close()
 }
 
 async function test7() {
