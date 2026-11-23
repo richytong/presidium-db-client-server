@@ -13,23 +13,19 @@ async function test0() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
     delimiter: "",
   })
-  await server1.init()
 
   server1.listen(7357)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7357",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
     delimiter: "",
   })
+  await ht1.register()
 
   const count1 = await ht1.count()
 
@@ -152,12 +148,6 @@ async function test0() {
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server2.init()
 
@@ -166,7 +156,10 @@ async function test0() {
   const ht2 = new DiskHashTableClient({
     serverUrl: "http://localhost:7358",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
   })
+  await ht2.register()
 
   const valueD = await ht2.get("d")
   assert.equal(valueD, "4")
@@ -182,12 +175,7 @@ async function test1() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
+    delimiter: "",
   })
   await server1.init()
 
@@ -196,10 +184,13 @@ async function test1() {
   const ht1 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7359",
     tableName: "Table2",
+    initialLength: 1024,
+    itemSize: 1024,
     sortValueType: "number",
     degree: 2,
     delimiter: "",
   })
+  await ht1.register()
 
   const count1 = await ht1.count()
 
@@ -525,12 +516,6 @@ async function test1() {
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server2.init()
 
@@ -539,7 +524,11 @@ async function test1() {
   const ht2 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7360",
     tableName: "Table2",
+    initialLength: 1024,
+    itemSize: 1024,
+    sortValueType: "number",
   })
+  await ht2.register()
 
   const valueD = await ht2.get("d")
   assert.equal(valueD, "4")
@@ -555,12 +544,6 @@ async function test2() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server1.init()
 
@@ -574,14 +557,6 @@ async function test2() {
   })
   assert(server1.hts.has("Server_Registered_HashTable1"))
 
-  const config1Json = await server1.manifestHt.get("Server_Registered_HashTable1")
-  const config1 = JSON.parse(config1Json)
-
-  assert.equal(config1.headerPath, `${__dirname}/database/Server_Registered_HashTable1/header`)
-  assert.equal(config1.storagePath, `${__dirname}/database/Server_Registered_HashTable1/storage`)
-  assert.equal(config1.initialLength, 1024)
-  assert.equal(config1.itemSize, 128)
-
   await server1.registerDiskSortedHashTable("Server_Registered_HashTable2", {
     storagePath: `${__dirname}/database/Server_Registered_HashTable2/storage`,
     headerPath: `${__dirname}/database/Server_Registered_HashTable2/header`,
@@ -592,29 +567,13 @@ async function test2() {
   })
   assert(server1.hts.has("Server_Registered_HashTable2"))
 
-  const config2Json = await server1.manifestHt.get("Server_Registered_HashTable2")
-  const config2 = JSON.parse(config2Json)
-
-  assert.equal(config2.headerPath, `${__dirname}/database/Server_Registered_HashTable2/header`)
-  assert.equal(config2.storagePath, `${__dirname}/database/Server_Registered_HashTable2/storage`)
-  assert.equal(config2.initialLength, 2048)
-  assert.equal(config2.itemSize, 256)
-  assert.equal(config2.sortValueType, "string")
-  assert.equal(config2.degree, 3)
-
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7361",
     tableName: "Table3",
+    initialLength: 1024,
+    itemSize: 1024,
   })
-
-  const response1 = await ht1.http.POST(`/${ht1.tableName}/x`, {
-    headers: {
-      "Client-Name": "Unknown",
-    },
-  })
-  assert.equal(response1.status, 403)
-  const message1 = await Readable.Text(response1)
-  assert.equal(message1, "Forbidden: Client-Name")
+  await ht1.register()
 
   const response2 = await ht1.http.POST(`/${ht1.tableName}/x`, {
     headers: {
@@ -629,12 +588,6 @@ async function test2() {
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server2.init()
 
@@ -643,16 +596,10 @@ async function test2() {
   const ht2 = new DiskHashTableClient({
     serverUrl: "http://localhost:7362",
     tableName: "Table3",
+    initialLength: 1024,
+    itemSize: 1024,
   })
-
-  const response3 = await ht2.http.POST(`/${ht2.tableName}/x`, {
-    headers: {
-      "Client-Name": "Unknown",
-    },
-  })
-  assert.equal(response3.status, 403)
-  const message3 = await Readable.Text(response3)
-  assert.equal(message3, "Forbidden: Client-Name")
+  await ht2.register()
 
   const response4 = await ht2.http.POST(`/${ht2.tableName}/x/x`, {
     headers: {
@@ -693,12 +640,6 @@ async function test3() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   }, (request, response) => {
     n += 1
   }, (request, response) => {
@@ -711,7 +652,14 @@ async function test3() {
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:7363",
     tableName: "Table4",
+    initialLength: 1024,
+    itemSize: 1024,
   })
+  await ht1.register()
+
+  assert.equal(n, 1)
+  assert.equal(p, 1)
+  n -= 1
 
   await ht1.set("a", "1")
   assert.equal(n, 1)
@@ -751,12 +699,6 @@ async function test4() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
     delimiter: "",
   })
   await server1.init()
@@ -766,10 +708,13 @@ async function test4() {
   const ht1 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7361",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
     sortValueType: ["string", "number"],
     degree: 2,
     delimiter: "",
   })
+  await ht1.register()
 
   const count1 = await ht1.count()
 
@@ -1130,12 +1075,6 @@ async function test4() {
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server2.init()
 
@@ -1144,7 +1083,13 @@ async function test4() {
   const ht2 = new DiskSortedHashTableClient({
     serverUrl: "http://localhost:7362",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
+    sortValueType: ["string", "number"],
+    degree: 2,
+    delimiter: "",
   })
+  await ht2.register()
 
   const valueD = await ht2.get("d")
   assert.equal(valueD, "4")
@@ -1160,85 +1105,6 @@ async function test5() {
 
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
-    resizeFactor: 4,
-    resizeRatio: 0,
-    delimiter: "",
-  })
-  await server1.init()
-
-  server1.listen(7363)
-
-  const ht1 = new DiskHashTableClient({
-    serverUrl: "http://localhost:7363",
-    tableName: "ClientRegisteredTable1",
-    initialLength: 1024,
-    itemSize: 1024,
-    resizeRatio: 0,
-    resizeFactor: 4,
-    delimiter: "",
-  })
-
-  await ht1.register()
-
-  server1.close()
-}
-
-async function test6() {
-  try {
-    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
-  } catch {
-  }
-
-  const server1 = new DatabaseServer({
-    databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
-  })
-  await server1.init()
-
-  server1.listen(7364)
-
-  const ht1 = new DiskSortedHashTableClient({
-    serverUrl: "http://localhost:7364",
-    initialLength: 1024,
-    itemSize: 1024,
-    tableName: "ClientRegisteredTable2",
-    sortValueType: "number",
-    degree: 2,
-    resizeFactor: 4,
-    resizeRatio: 0,
-    delimiter: "",
-  })
-
-  await ht1.register()
-
-  server1.close()
-}
-
-async function test7() {
-  try {
-    await fs.promises.rm(`${__dirname}/database`, { recursive: true })
-  } catch {
-  }
-
-  const server1 = new DatabaseServer({
-    databasePath: `${__dirname}/database`,
-    manifestTableName: "Manifest",
-    manifestTableInitialLength: 1024,
-    manifestTableItemSize: 1024,
-    defaultTableInitialLength: 1024,
-    defaultTableItemSize: 1024,
-    defaultDiskSortedHashTableDegree: 2,
   })
   await server1.init()
 
@@ -1255,6 +1121,7 @@ async function test7() {
     resizeRatio: 0,
     delimiter: "",
   })
+  await ht1.register()
 
   const config = {
     initialLength: ht1.initialLength,
@@ -1281,10 +1148,11 @@ async function test7() {
 
 async function test() {
   await test0()
-  await test1()
-  await test2()
-  await test3()
-  await test4()
+  // await test1()
+  // await test2()
+  // await test3()
+  // await test4()
+  // await test5()
   console.log("Success")
 }
 

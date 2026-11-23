@@ -14,27 +14,23 @@ async function test0() {
   const server = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server.init()
 
-  let resolve1
-  const promise1 = new Promise(resolve => (resolve1 = resolve))
-  server.listen(7357, resolve1)
-  await promise1
+  server.listen(7357)
 
   const loadBalancer = new DatabaseLoadBalancer(
     async () => 0,
     { serverIps: ["http://localhost:7357"] }
   )
 
-  let resolve2
-  const promise2 = new Promise(resolve => (resolve2 = resolve))
-  loadBalancer.listen(6333, resolve2)
-  await promise2
+  loadBalancer.listen(6333)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:6333",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
   })
+  await ht1.register()
 
   await ht1.set("a", "1")
   await ht1.set("b", "2")
@@ -67,7 +63,6 @@ async function test1() {
   }, request => {
     events.push({ server: 1, key: request.headers["key"] })
   })
-  await server1.init()
 
   server1.listen(7358)
 
@@ -76,7 +71,6 @@ async function test1() {
   }, request => {
     events.push({ server: 2, key: request.headers["key"] })
   })
-  await server2.init()
 
   server2.listen(7359)
 
@@ -85,7 +79,6 @@ async function test1() {
   }, request => {
     events.push({ server: 3, key: request.headers["key"] })
   })
-  await server3.init()
 
   server3.listen(7360)
 
@@ -93,10 +86,10 @@ async function test1() {
     if (length == null) {
       throw new Error("length")
     }
-    if (key <= "i") {
+    if (tableName <= "i") {
       return 0
     }
-    if (key <= "r") {
+    if (tableName <= "r") {
       return 1
     }
     return 2
@@ -117,67 +110,89 @@ async function test1() {
     p = n
   })
 
-  let resolve4
-  const promise4 = new Promise(resolve => (resolve4 = resolve))
-  loadBalancer.listen(6333, resolve4)
-  await promise4
+  loadBalancer.listen(6333)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:6333",
-    tableName: "Table1",
+    tableName: "a",
+    initialLength: 1024,
+    itemSize: 1024,
   })
-
-  await ht1.set("a", "1")
-
+  await ht1.register()
   assert.equal(n, 1)
   assert.equal(p, 1)
 
-  await ht1.set("j", "10")
+  await ht1.set("a", "1")
 
   assert.equal(n, 2)
   assert.equal(p, 2)
 
-  await ht1.set("z", "26")
+  assert.equal(events.length, 2)
+  assert.equal(events[0].server, 1)
+  assert.equal(events[1].server, 1)
+  assert.equal(events[1].key, "a")
+
+  const ht2 = new DiskHashTableClient({
+    serverUrl: "http://localhost:6333",
+    tableName: "j",
+    initialLength: 1024,
+    itemSize: 1024,
+  })
+  await ht2.register()
 
   assert.equal(n, 3)
   assert.equal(p, 3)
 
-  assert.equal(events.length, 3)
-  assert.equal(events[0].server, 1)
-  assert.equal(events[0].key, "a")
-  assert.equal(events[1].server, 2)
-  assert.equal(events[1].key, "j")
-  assert.equal(events[2].server, 3)
-  assert.equal(events[2].key, "z")
-
-  const valueA = await ht1.get("a")
+  await ht2.set("j", "10")
 
   assert.equal(n, 4)
   assert.equal(p, 4)
 
-  const valueB = await ht1.get("j")
+  assert.equal(events.length, 4)
+  assert.equal(events[2].server, 2)
+  assert.equal(events[3].server, 2)
+  assert.equal(events[3].key, "j")
+
+  const ht3 = new DiskHashTableClient({
+    serverUrl: "http://localhost:6333",
+    tableName: "z",
+    initialLength: 1024,
+    itemSize: 1024,
+  })
+  await ht3.register()
 
   assert.equal(n, 5)
   assert.equal(p, 5)
 
-  const valueC = await ht1.get("z")
+  await ht3.set("z", "26")
 
   assert.equal(n, 6)
   assert.equal(p, 6)
 
   assert.equal(events.length, 6)
-  assert.equal(events[0].server, 1)
-  assert.equal(events[0].key, "a")
-  assert.equal(events[1].server, 2)
-  assert.equal(events[1].key, "j")
-  assert.equal(events[2].server, 3)
-  assert.equal(events[2].key, "z")
-  assert.equal(events[3].server, 1)
-  assert.equal(events[3].key, "a")
-  assert.equal(events[4].server, 2)
-  assert.equal(events[4].key, "j")
-  assert.equal(events[5].server, 3)
+  assert.equal(events[4].server, 3)
+  assert.equal(events[4].server, 3)
   assert.equal(events[5].key, "z")
+
+  const valueA = await ht1.get("a")
+
+  assert.equal(n, 7)
+  assert.equal(p, 7)
+
+  const valueB = await ht2.get("j")
+
+  assert.equal(n, 8)
+  assert.equal(p, 8)
+
+  const valueC = await ht3.get("z")
+
+  assert.equal(n, 9)
+  assert.equal(p, 9)
+
+  assert.equal(events.length, 9)
+  assert.equal(events[6].server, 1)
+  assert.equal(events[7].server, 2)
+  assert.equal(events[8].server, 3)
 
   assert.equal(valueA, "1")
   assert.equal(valueB, "10")
@@ -198,21 +213,18 @@ async function test2() {
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server1.init()
 
   server1.listen(7361)
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server2.init()
 
   server2.listen(7362)
 
   const server3 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server3.init()
 
   server3.listen(7363)
 
@@ -224,15 +236,15 @@ async function test2() {
     ]],
   })
 
-  let resolve4
-  const promise4 = new Promise(resolve => (resolve4 = resolve))
-  loadBalancer.listen(6334, resolve4)
-  await promise4
+  loadBalancer.listen(6334)
 
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:6334",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
   })
+  await ht1.register()
 
   await ht1.set("a", "1")
   await ht1.set("b", "2")
@@ -261,14 +273,12 @@ async function test3() {
   const server1 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server1.init()
 
   server1.listen(7364)
 
   const server2 = new DatabaseServer({
     databasePath: `${__dirname}/database`,
   })
-  await server2.init()
 
   server2.listen(7365)
 
@@ -294,7 +304,10 @@ async function test3() {
   const ht1 = new DiskHashTableClient({
     serverUrl: "http://localhost:6335",
     tableName: "Table1",
+    initialLength: 1024,
+    itemSize: 1024,
   })
+  await ht1.register()
 
   consoleError = console.error
   const errors = []

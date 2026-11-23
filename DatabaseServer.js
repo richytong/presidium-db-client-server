@@ -22,12 +22,6 @@ const errorHandler = require("./errorHandler")
  *
  * new DatabaseServer(options {
  *   databasePath: string,
- *   manifestTableName: string,
- *   manifestTableInitialLength: number,
- *   manifestTableItemSize: number,
- *   defaultTableInitialLength: number,
- *   defaultTableItemSize: number,
- *   defaultDiskSortedHashTableDegree: number,
  *   delimiter: string,
  * }, ...handlers Arguments<HttpHandler>) -> server DatabaseServer
  * ```
@@ -35,35 +29,9 @@ const errorHandler = require("./errorHandler")
 class DatabaseServer {
   constructor(options, ...handlers) {
     this.databasePath = options.databasePath
-    this.manifestTableName = options.manifestTableName ?? "Manifest"
-    this.manifestTableInitialLength = options.manifestTableInitialLength ?? 1048576
-    this.manifestTableItemSize = options.manifestTableItemSize ?? 1024
-    this.defaultTableInitialLength = options.defaultTableInitialLength ?? 1048576
-    this.defaultTableItemSize = options.defaultTableItemSize ?? 1024
-    this.defaultDiskSortedHashTableDegree = options.defaultDiskSortedHashTableDegree ?? 2
     this.delimiter = options.delimiter ?? ""
     this.handlers = handlers
-    this.server = null
     this.hts = new Map()
-  }
-
-  /**
-   * @name init
-   *
-   * @docs
-   * ```specscript
-   * init() -> Promise<>
-   * ```
-   */
-  async init() {
-    const manifestHt = new DiskHashTable({
-      storagePath: `${this.databasePath}/${this.manifestTableName}/storage`,
-      headerPath: `${this.databasePath}/${this.manifestTableName}/header`,
-      initialLength: this.manifestTableInitialLength,
-      itemSize: this.manifestTableItemSize,
-    })
-    await manifestHt.init()
-    this.manifestHt = manifestHt
 
     const router = tryCatch(
       switchCase(
@@ -97,6 +65,19 @@ class DatabaseServer {
   }
 
   /**
+   * @name init
+   *
+   * @docs
+   * ```specscript
+   * init() -> Promise<>
+   * ```
+   *
+   * DEPRECATED
+   */
+  async init() {
+  }
+
+  /**
    * @name listen
    *
    * @docs
@@ -118,7 +99,6 @@ class DatabaseServer {
    * ```
    */
   close() {
-    this.manifestHt.close()
     for (const [tableName, ht] of this.hts) {
       ht.close()
     }
@@ -151,7 +131,6 @@ class DatabaseServer {
     const ht = new DiskHashTable(tableOptions)
     await ht.init()
 
-    await this.manifestHt.set(tableName, JSON.stringify(tableOptions))
     this.hts.set(tableName, ht)
   }
 
@@ -185,7 +164,6 @@ class DatabaseServer {
     const ht = new DiskSortedHashTable(tableOptions)
     await ht.init()
 
-    await this.manifestHt.set(tableName, JSON.stringify(tableOptions))
     this.hts.set(tableName, ht)
   }
 }

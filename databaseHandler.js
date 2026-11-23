@@ -9,76 +9,6 @@ const Readable = require("presidium/Readable")
 const parseString = require("./parseString")
 
 /**
- * @name getHt
- *
- * @docs
- * ```specscript
- * module HTTP "https://presidium.services/docs/HTTP"
- *
- * getHt(tableName string, request HTTP.Request) -> ht DiskHashTable|DiskSortedHashTable
- * ```
- */
-async function getHt(tableName, request) {
-  const {
-    databasePath,
-    defaultTableInitialLength,
-    defaultTableItemSize,
-    manifestHt,
-    hts,
-  } = this
-
-  const htConfigString = await manifestHt.get(tableName)
-  let ht
-  if (htConfigString) {
-    const config = JSON.parse(htConfigString)
-    if (request.headers["client-name"] == "DiskHashTableClient") {
-      ht = new DiskHashTable(config)
-      await ht.init()
-      hts.set(tableName, ht)
-    } else if (request.headers["client-name"] == "DiskSortedHashTableClient") {
-      ht = new DiskSortedHashTable(config)
-      await ht.init()
-      hts.set(tableName, ht)
-    } else {
-      const error = new Error("Forbidden: Client-Name")
-      error.code = 403
-      throw error
-    }
-  } else {
-    if (request.headers["client-name"] == "DiskHashTableClient") {
-      const config = {
-        storagePath: `${databasePath}/${tableName}/storage`,
-        headerPath: `${databasePath}/${tableName}/header`,
-        initialLength: defaultTableInitialLength,
-        itemSize: defaultTableItemSize,
-      }
-      ht = new DiskHashTable(config)
-      await manifestHt.set(tableName, JSON.stringify(config))
-      await ht.init()
-      hts.set(tableName, ht)
-    } else if (request.headers["client-name"] == "DiskSortedHashTableClient") {
-      const config = pipe({
-        storagePath: `${databasePath}/${tableName}/storage`,
-        headerPath: `${databasePath}/${tableName}/header`,
-        initialLength: defaultTableInitialLength,
-        itemSize: defaultTableItemSize,
-        sortValueType: request.headers["sort-value-type"],
-        degree: request.headers["degree"],
-      }, filter(__), map(unescape), map.call(parseString, this))
-      ht = new DiskSortedHashTable(config)
-      await manifestHt.set(tableName, JSON.stringify(config))
-      await ht.init()
-      hts.set(tableName, ht)
-    } else {
-      const error = new Error("Forbidden: Client-Name")
-      error.code = 403
-      throw error
-    }
-  }
-  return ht
-}
-
-/**
  * @name databaseHandler
  *
  * @docs
@@ -101,24 +31,30 @@ async function databaseHandler(request, response) {
 
   const tableName = request.pathSegments[0]
   const fname = request.pathSegments[1]
-  const ht = this.hts.get(tableName) ?? await getHt.call(this, tableName, request)
+
+  if (fname == "register") {
+    const clientName = request.headers["client-name"]
+    const config = await Readable.JSON(request)
+    if (clientName == "DiskHashTableClient") {
+      await this.registerDiskHashTable(tableName, config)
+    } else if (clientName == "DiskSortedHashTableClient") {
+      await this.registerDiskSortedHashTable(tableName, config)
+    } else {
+      const error = new Error("Forbidden: Client-Name")
+      error.code = 403
+      throw error
+    }
+    response.writeHead(200, {
+      "Content-Type": "text/plain",
+    })
+    response.end("OK")
+    return
+  }
+
+  const ht = this.hts.get(tableName)
 
   await switchCase(
     fname,
-
-    eq("register"), async () => {
-      const clientName = request.headers["client-name"]
-      const config = await Readable.JSON(request)
-      if (clientName == "DiskHashTableClient") {
-        await this.registerDiskHashTable(tableName, config)
-      } else if (clientName == "DiskSortedHashTableClient") {
-        await this.registerDiskSortedHashTable(tableName, config)
-      }
-      response.writeHead(200, {
-        "Content-Type": "text/plain",
-      })
-      response.end("OK")
-    },
 
     eq("clear"), async () => {
       await ht.clear()
