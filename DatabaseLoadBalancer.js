@@ -109,7 +109,7 @@ class DatabaseLoadBalancer {
    * listen(port number, callback function) -> undefined
    * ```
    *
-   * Start the database load balancer server listening on the specified port with an optional callback function.
+   * Starts the database load balancer server listening on the specified port with an optional callback function.
    *
    * Arguments:
    *   * `port` - `number` - the port on which the database load balancer server will listen.
