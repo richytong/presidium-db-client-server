@@ -268,7 +268,7 @@ class DiskHashTableClient {
    *
    * @docs
    * ```specscript
-   * count() -> ct Promise<number>
+   * count() -> Promise<number>
    * ```
    *
    * Returns the number of items in the disk hash table on the database server.
