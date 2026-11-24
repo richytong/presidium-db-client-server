@@ -82,7 +82,7 @@ class DiskSortedHashTableClient {
    * register() -> Promise<>
    * ```
    *
-   * Registers the disk sorted hash table client with the database server. Initializes a [DiskSortedHashTable](/docs/DiskSortedHashTable) on the database server.
+   * Registers and initializes a [DiskSortedHashTable](/docs/DiskSortedHashTable) instance on the database server.
    *
    * Arguments:
    *   * (none)

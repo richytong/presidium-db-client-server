@@ -154,7 +154,7 @@ class DatabaseServer {
    * }) -> Promise<>
    * ```
    *
-   * Registers a [DiskHashTable](/docs/DiskHashTable) instance with the database server. Initializes the specified table.
+   * Registers and initializes a [DiskHashTable](/docs/DiskHashTable) instance on the database server.
    *
    * Arguments:
    *   * `tableName` - `string` - the name of the registered DiskHashTable instance.
@@ -205,7 +205,7 @@ class DatabaseServer {
    * }) -> Promise<>
    * ```
    *
-   * Registers a [DiskSortedHashTable](/docs/DiskSortedHashTable) instance with the database server. Initializes the specified table.
+   * Registers and initializes a [DiskSortedHashTable](/docs/DiskSortedHashTable) instance on the database server.
    *
    * Arguments:
    *   * `tableName` - `string` - the name of the registered DiskSortedHashTable instance.

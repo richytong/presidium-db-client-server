@@ -69,7 +69,7 @@ class DiskHashTableClient {
    * register() -> Promise<>
    * ```
    *
-   * Registers the disk hash table client with the database server. Initializes a [DiskHashTable](/docs/DiskHashTable) on the database server.
+   * Registers and initializes a [DiskHashTable](/docs/DiskHashTable) instance on the database server.
    *
    * Arguments:
    *   * (none)
