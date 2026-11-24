@@ -21,12 +21,12 @@ const defaultHash = require("./hash")
  *
  * new DatabaseLoadBalancer(options {
  *   serverAddresses: Array<string>|Array<Array<string>>,
- * }, ...handlers Arguments<HttpHandler>) -> DatabaseLoadBalancer
+ * }, ...handlers Arguments<HttpHandler>) -> server DatabaseLoadBalancer
  *
  * hash(
  *   tableName string,
  *   key string,
- *   serverAddresses number
+ *   serverAddressesLength number
  * ) -> serverIndex Promise|number
  *
  * new DatabaseLoadBalancer(hash, options {
@@ -38,7 +38,20 @@ const defaultHash = require("./hash")
  *
  * Arguments:
  *   * `options`
- *     * `serverAddresses` - `Array<string>|Array<Array<string>>` - the server addresses to load balance.
+ *     * `serverAddresses` - `Array<string>|Array<Array<string>>` - the server addresses to load balance. An array of arrays of server addresses means the request data should be replicated across the array of server addresses indicated by the hash function.
+ *
+ * Return:
+ *   * `server` - [`DatabaseLoadBalancer`](/docs/DatabaseLoadBalancer) - a DatabaseLoadBalancer instance.
+ *
+ * ```javascript
+ * const server = new DatabaseLoadBalancer({
+ *   serverAddresses: ["10.0.0.1:8080", "10.0.0.2:8080", "10.0.0.3:8080"],
+ * })
+ *
+ * server.listen(8080, () => {
+ *   console.log("Database load balancer server listening on port 8080")
+ * })
+ * ```
  */
 class DatabaseLoadBalancer {
   constructor(hash, options, ...handlers) {
@@ -90,8 +103,21 @@ class DatabaseLoadBalancer {
    *
    * @docs
    * ```specscript
-   * listen(port number) -> ()
-   * listen(port number, callback function) -> ()
+   * listen(port number) -> undefined
+   * listen(port number, callback function) -> undefined
+   * ```
+   *
+   * Start the database load balancer server listening on the specified port with an optional callback function.
+   *
+   * Arguments:
+   *   * `port` - `number` - the port on which the database load balancer server will listen.
+   *   * `callback` - `function` - a callback function to call once the database load balancer server has started listening.
+   *
+   * Return:
+   *   * `undefined`
+   *
+   * ```javascript
+   * server.listen(8080)
    * ```
    */
   listen(port, callback) {
@@ -103,7 +129,19 @@ class DatabaseLoadBalancer {
    *
    * @docs
    * ```specscript
-   * close() -> ()
+   * close() -> undefined
+   * ```
+   *
+   * Closes the database load balancer server.
+   *
+   * Arguments:
+   *   * (none)
+   *
+   * Return:
+   *   * `undefined`
+   *
+   * ```javascript
+   * server.close()
    * ```
    */
   close() {
