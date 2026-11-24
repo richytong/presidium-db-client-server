@@ -58,6 +58,17 @@ const exists = require("./exists")
  *   itemSize: 5120,
  *   degree: 2,
  * })
+ *
+ * const compositeSortValueHt = new DiskSortedHashTableClient({
+ *   storagePath: "/path/to/storage-file",
+ *   headerPath: "/path/to/header-file",
+ *   initialLength: 1024,
+ *   itemSize: 512 * 1024,
+ *   sortValueType: ["string", "number"],
+ *   resizeRatio: 0.5,
+ *   resizeFactor: 1000,
+ *   degree: 2,
+ * })
  * ```
  */
 class DiskSortedHashTableClient {
