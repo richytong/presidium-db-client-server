@@ -294,11 +294,11 @@ class DiskSortedHashTableClient {
    * }) -> values AsyncIterator<string|Buffer>
    * ```
    *
-   * Returns an iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value. Item values are yielded in ascending order.
+   * Returns an async iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value. Item values are yielded in ascending order.
    *
-   * If a starting sort value and ending sort value are provided, the iterator returns only values of items with sort values between the starting and ending sort values, including values of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the iterator returns values of items with sort values greater than or equal to the starting sort value. If only an ending sort value is provided, the iterator returns values of items with sort values less than or equal to the ending sort value.
+   * If a starting sort value and ending sort value are provided, the async iterator returns only values of items with sort values between the starting and ending sort values, including values of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the async iterator returns values of items with sort values greater than or equal to the starting sort value. If only an ending sort value is provided, the async iterator returns values of items with sort values less than or equal to the ending sort value.
    *
-   * If an exclusive start key is provided, the iterator returns values of items with sort values greater than or equal to the sort value of the item at the exclusive start key, not including the value of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
+   * If an exclusive start key is provided, the async iterator returns values of items with sort values greater than or equal to the sort value of the item at the exclusive start key, not including the value of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
    *
    * Arguments:
    *   * (none) - retrieves the values of all items in the disk sorted hash table on the database server.
@@ -306,13 +306,13 @@ class DiskSortedHashTableClient {
    *     * `exclusiveStartKey` - `string` - the key after which to start iterating.
    *     * `startingSortValue` - `string|number|Array<string|number>` - the sort value from which to start iterating. If this value is an array, the starting sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
    *     * `endingSortValue` - `string|number|Array<string|number>` - the sort value at which to stop iterating. If this value is an array, the ending sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
-   *     * `valueType` - `"string"|"binary"` - the type of value that the iterator yields. Defaults to `"string"`.
-   *       * `"string"` - iterator yields `string` values.
-   *       * `"binary"` - iterator yields `Buffer` values.
-   *     * `limit` - `number` - the maximum number of values to yield from the iterator.
+   *     * `valueType` - `"string"|"binary"` - the type of value that the async iterator yields. Defaults to `"string"`.
+   *       * `"string"` - async iterator yields `string` values.
+   *       * `"binary"` - async iterator yields `Buffer` values.
+   *     * `limit` - `number` - the maximum number of values to yield from the async iterator.
    *
    * Return:
-   *   * `values` - `AsyncGenerator<string|Buffer>` - an async generator of the values of all items in the disk sorted hash table on the database server sorted by sort value in ascending order.
+   *   * `values` - `AsyncIterator<string|Buffer>` - an async iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value in ascending order.
    *
    * ```javascript
    * await ht.set("key1", "value1", 1)
@@ -405,11 +405,11 @@ class DiskSortedHashTableClient {
    * }) -> values AsyncIterator<string|Buffer>
    * ```
    *
-   * Returns an iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value. Item values are yielded in descending order.
+   * Returns an async iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value. Item values are yielded in descending order.
    *
-   * If a starting sort value and ending sort value are provided, the iterator returns only values of items with sort values between the starting and ending sort values, including values of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the iterator returns values of items with sort values less than or equal to the starting sort value.
+   * If a starting sort value and ending sort value are provided, the async iterator returns only values of items with sort values between the starting and ending sort values, including values of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the async iterator returns values of items with sort values less than or equal to the starting sort value.
    *
-   * If an exclusive start key is provided, the iterator returns values of items with sort values less than or equal to the sort value of the item at the exclusive start key, not including the value of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
+   * If an exclusive start key is provided, the async iterator returns values of items with sort values less than or equal to the sort value of the item at the exclusive start key, not including the value of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
    *
    * Arguments:
    *   * (none) - retrieves the values of all items in the disk sorted hash table on the database server.
@@ -417,13 +417,13 @@ class DiskSortedHashTableClient {
    *     * `exclusiveStartKey` - `string` - the key after which to start iterating.
    *     * `startingSortValue` - `string|number|Array<string|number>` - the sort value from which to start iterating. If this value is an array, the starting sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
    *     * `endingSortValue` - `string|number|Array<string|number>` - the sort value at which to stop iterating. If this value is an array, the ending sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
-   *     * `valueType` - `"string"|"binary"` - the type of value that the iterator yields. Defaults to `"string"`.
-   *       * `string` - iterator yields `string` values.
-   *       * `binary` - iterator yields `Buffer` values.
-   *     * `limit` - `number` - the maximum number of values to yield from the iterator.
+   *     * `valueType` - `"string"|"binary"` - the type of value that the async iterator yields. Defaults to `"string"`.
+   *       * `string` - async iterator yields `string` values.
+   *       * `binary` - async iterator yields `Buffer` values.
+   *     * `limit` - `number` - the maximum number of values to yield from the async iterator.
    *
    * Return:
-   *   * `values` - `AsyncGenerator<string|Buffer>` - an async generator of the values of all items in the disk sorted hash table on the database server sorted by sort value in descending order.
+   *   * `values` - `AsyncIterator<string|Buffer>` - an async iterator of the values of all items in the disk sorted hash table on the database server sorted by sort value in descending order.
    *
    * ```javascript
    * await ht.set("key1", "value1", 1)
@@ -515,36 +515,36 @@ class DiskSortedHashTableClient {
    *   limit: number,
    * }
    *
-   * forwardEntriesIterator() -> entries AsyncGenerator<[
+   * forwardEntriesIterator() -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   sortValue string|number,
    * ]>
    *
-   * forwardEntriesIterator() -> entries AsyncGenerator<[
+   * forwardEntriesIterator() -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   ...sortValue Array<string|number>,
    * ]>
    *
-   * forwardEntriesIterator(options) -> entries AsyncGenerator<[
+   * forwardEntriesIterator(options) -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   sortValue string|number,
    * ]>
    *
-   * forwardEntriesIterator(options) -> entries AsyncGenerator<[
+   * forwardEntriesIterator(options) -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   ...sortValue Array<string|number>,
    * ]>
    * ```
    *
-   * Returns an iterator of the entries (key, value, and sort value) of all items in the disk sorted hash table on the database server sorted by sort value. Item entries are yielded in ascending order.
+   * Returns an async iterator of the entries (key, value, and sort value) of all items in the disk sorted hash table on the database server sorted by sort value. Item entries are yielded in ascending order.
    *
-   * If a starting sort value and ending sort value are provided, the iterator returns only entries of items with sort values between the starting and ending sort values, including entries of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the iterator returns entries of items with sort values greater than or equal to the starting sort value. If only an ending sort value is provided, the iterator returns entries of items with sort values less than or equal to the ending sort value.
+   * If a starting sort value and ending sort value are provided, the async iterator returns only entries of items with sort values between the starting and ending sort values, including entries of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the async iterator returns entries of items with sort values greater than or equal to the starting sort value. If only an ending sort value is provided, the async iterator returns entries of items with sort values less than or equal to the ending sort value.
    *
-   * If an exclusive start key is provided, the iterator returns entries of items with sort values greater than or equal to the sort value of the item at the exclusive start key, not including the entry of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
+   * If an exclusive start key is provided, the async iterator returns entries of items with sort values greater than or equal to the sort value of the item at the exclusive start key, not including the entry of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
    *
    * Arguments:
    *   * (none) - retrieves the entries of all items in the disk sorted hash table on the database server.
@@ -552,13 +552,13 @@ class DiskSortedHashTableClient {
    *     * `exclusiveStartKey` - `string` - the key after which to start iterating.
    *     * `startingSortValue` - `string|number|Array<string|number>` - the sort value from which to start iterating. If this value is an array, the starting sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
    *     * `endingSortValue` - `string|number|Array<string|number>` - the sort value at which to stop iterating. If this value is an array, the ending sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
-   *     * `valueType` - `"string"|"binary"` - the type of value that the iterator yields. Defaults to `"string"`.
-   *       * `"string"` - iterator yields entries with `string` values.
-   *       * `"binary"` - iterator yields entries with `Buffer` values.
-   *     * `limit` - `number` - the maximum number of entries to yield from the iterator.
+   *     * `valueType` - `"string"|"binary"` - the type of value that the async iterator yields. Defaults to `"string"`.
+   *       * `"string"` - async iterator yields entries with `string` values.
+   *       * `"binary"` - async iterator yields entries with `Buffer` values.
+   *     * `limit` - `number` - the maximum number of entries to yield from the async iterator.
    *
    * Return:
-   *   * `entries` - `AsyncGenerator<[key string, value string|Buffer, sortValue string|number]>` - an async generator of the entries of all items in the disk sorted hash table on the database server sorted by sort value in ascending order.
+   *   * `entries` - `AsyncIterator<[key string, value string|Buffer, sortValue string|number]>` - an async iterator of the entries of all items in the disk sorted hash table on the database server sorted by sort value in ascending order.
    *
    * ```javascript
    * await ht.set("key1", "value1", 1)
@@ -660,36 +660,36 @@ class DiskSortedHashTableClient {
    *   limit: number,
    * }
    *
-   * reverseEntriesIterator() -> entries AsyncGenerator<[
+   * reverseEntriesIterator() -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   sortValue string|number,
    * ]>
    *
-   * reverseEntriesIterator() -> entries AsyncGenerator<[
+   * reverseEntriesIterator() -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   ...sortValue Array<string|number>,
    * ]>
    *
-   * reverseEntriesIterator(options) -> entries AsyncGenerator<[
+   * reverseEntriesIterator(options) -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   sortValue string|number,
    * ]>
    *
-   * reverseEntriesIterator(options) -> entries AsyncGenerator<[
+   * reverseEntriesIterator(options) -> entries AsyncIterator<[
    *   key string,
    *   value string|Buffer,
    *   ...sortValue Array<string|number>,
    * ]>
    * ```
    *
-   * Returns an iterator of the entries (key, value, and sort value) of all items in the disk sorted hash table on the database server sorted by sort value. Item entries are yielded in descending order.
+   * Returns an async iterator of the entries (key, value, and sort value) of all items in the disk sorted hash table on the database server sorted by sort value. Item entries are yielded in descending order.
    *
-   * If a starting sort value and ending sort value are provided, the iterator returns only entries of items with sort values between the starting and ending sort values, including entries of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the iterator returns entries of items with sort values less than or equal to the starting sort value.
+   * If a starting sort value and ending sort value are provided, the async iterator returns only entries of items with sort values between the starting and ending sort values, including entries of items with sort values equal to the starting and ending sort values. If only a starting sort value is provided, the async iterator returns entries of items with sort values less than or equal to the starting sort value.
    *
-   * If an exclusive start key is provided, the iterator returns entries of items with sort values less than or equal to the sort value of the item at the exclusive start key, not including the entry of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
+   * If an exclusive start key is provided, the async iterator returns entries of items with sort values less than or equal to the sort value of the item at the exclusive start key, not including the entry of the item at the exclusive start key. The exclusive start key takes precedence over the starting sort value.
    *
    * Arguments:
    *   * (none) - retrieves the entries of all items in the disk sorted hash table on the database server.
@@ -697,13 +697,13 @@ class DiskSortedHashTableClient {
    *     * `exclusiveStartKey` - `string` - the key after which to start iterating.
    *     * `startingSortValue` - `string|number|Array<string|number>` - the sort value from which to start iterating. If this value is an array, the starting sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
    *     * `endingSortValue` - `string|number|Array<string|number>` - the sort value at which to stop iterating. If this value is an array, the ending sort value is treated as a composite sort value. Composite sort values have each element of their arrays compared in order.
-   *     * `valueType` - `"string"|"binary"` - the type of value that the iterator yields. Defaults to `"string"`.
-   *       * `string` - iterator yields entries with `string` values.
-   *       * `binary` - iterator yields entries with `Buffer` values.
-   *     * `limit` - `number` - the maximum number of entries to yield from the iterator.
+   *     * `valueType` - `"string"|"binary"` - the type of value that the async iterator yields. Defaults to `"string"`.
+   *       * `string` - async iterator yields entries with `string` values.
+   *       * `binary` - async iterator yields entries with `Buffer` values.
+   *     * `limit` - `number` - the maximum number of entries to yield from the async iterator.
    *
    * Return:
-   *   * `entries` - `AsyncGenerator<[key string, value string|Buffer, sortValue string|number]>` - an async generator of the entries of all items in the disk sorted hash table on the database server sorted by sort value in descending order.
+   *   * `entries` - `AsyncIterator<[key string, value string|Buffer, sortValue string|number]>` - an async iterator of the entries of all items in the disk sorted hash table on the database server sorted by sort value in descending order.
    *
    * ```javascript
    * await ht.set("key1", "value1", 1)
