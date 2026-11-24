@@ -280,7 +280,7 @@ class DiskHashTableClient {
    *   * `Promise<number>` - a promise of the number of items in the disk hash table on the database server.
    *
    * ```javascript
-   * const count = ht.count()
+   * const count = await ht.count()
    * ```
    */
   async count() {
