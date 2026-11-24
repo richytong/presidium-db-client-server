@@ -20,19 +20,25 @@ const defaultHash = require("./hash")
  * type HttpHandler(http.ClientRequest, http.ServerResponse) -> Promise<>|undefined
  *
  * new DatabaseLoadBalancer(options {
- *   serverIps: Array<string>|Array<Array<string>>,
+ *   serverAddresses: Array<string>|Array<Array<string>>,
  * }, ...handlers Arguments<HttpHandler>) -> DatabaseLoadBalancer
  *
  * hash(
  *   tableName string,
  *   key string,
- *   serverIpslength number
+ *   serverAddresses number
  * ) -> serverIndex Promise|number
  *
  * new DatabaseLoadBalancer(hash, options {
- *   serverIps: Array<string>|Array<Array<string>>,
+ *   serverAddresses: Array<string>|Array<Array<string>>,
  * }, ...handlers Arguments<HttpHandler>) -> DatabaseLoadBalancer
  * ```
+ *
+ * Presidium DatabaseLoadBalancer class. Creates a database load balancer server.
+ *
+ * Arguments:
+ *   * `options`
+ *     * `serverAddresses` - `Array<string>|Array<Array<string>>` - the server addresses to load balance.
  */
 class DatabaseLoadBalancer {
   constructor(hash, options, ...handlers) {
@@ -43,7 +49,7 @@ class DatabaseLoadBalancer {
       handlers.shift(options)
       options = hash
     }
-    this.serverIps = options.serverIps
+    this.serverAddresses = options.serverAddresses ?? options.serverAddresses
     this.handlers = handlers
     this.clients = new Map()
     this.closed = false

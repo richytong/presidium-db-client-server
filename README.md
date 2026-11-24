@@ -111,7 +111,7 @@ for await (const postJson of postHt.reverseIterator({
 const DatabaseLoadBalancer = require("presidium/DatabaseLoadBalancer")
 
 const loadBalancer = new DatabaseLoadBalancer({
-  serverIps: ["10.0.0.1:8080", "10.0.0.2:8080"],
+  serverAddresses: ["10.0.0.1:8080", "10.0.0.2:8080"],
 })
 
 loadBalancer.listen(6333, () => {

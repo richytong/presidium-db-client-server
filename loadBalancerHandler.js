@@ -37,12 +37,12 @@ async function loadBalancerHandler(request, response) {
   const tableName = request.pathSegments[0]
   const key = request.headers["key"]
 
-  let index = this.hash(tableName, key, this.serverIps.length)
+  let index = this.hash(tableName, key, this.serverAddresses.length)
   if (typeof index.then == "function") {
     index = await index
   }
 
-  const serverIpOrIps = this.serverIps[index]
+  const serverIpOrIps = this.serverAddresses[index]
 
   if (Array.isArray(serverIpOrIps)) {
     const passthroughStreams = []
