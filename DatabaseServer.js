@@ -42,7 +42,7 @@ const errorHandler = require("./errorHandler")
  * })
  *
  * server.listen(8080, () => {
- *   console.log("Database load balancer server listening on port 8080")
+ *   console.log("Database server listening on port 8080")
  * })
  * ```
  */
@@ -92,8 +92,8 @@ class DatabaseServer {
    *
    * @docs
    * ```specscript
-   * listen(port number) -> ()
-   * listen(port number, callback function) -> ()
+   * listen(port number) -> undefined
+   * listen(port number, callback function) -> undefined
    * ```
    *
    * Start the database server listening on the specified port with an optional callback function.
@@ -118,7 +118,7 @@ class DatabaseServer {
    *
    * @docs
    * ```specscript
-   * close() -> ()
+   * close() -> undefined
    * ```
    *
    * Closes the database server.
