@@ -32,6 +32,7 @@ const errorHandler = require("./errorHandler")
  *   * `options`
  *     * `databasePath` - `string` - the absolute path on the machine running the database server to the database files.
  *     * `delimiter` - `string` - a character or string that will separate chunks of data as they are sent to the database client. Defaults to the escape character "^[".
+ *   * `handlers` - `Arguments<HttpHandler>` - HTTP handlers that process the request in order before it is processed by the database server.
  *
  * Return:
  *   * `server` - [`DatabaseServer`](/docs/DatabaseServer) - a DatabaseServer instance.
